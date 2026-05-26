@@ -1,0 +1,33 @@
+# OS (Linux/Debian)
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# IDE (IntelliJ IDEA)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Backend (Java / Spring Boot / Maven)
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+*.class
+*.jar
+*.war
+*.ear
+*.log
+
+# Infrastructure / Docker / Secrets
+.env
+.env.*
+docker-compose.override.yml
