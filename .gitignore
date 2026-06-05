@@ -32,8 +32,9 @@ buildNumber.properties
 .env.*
 docker-compose.override.yml
 
-### Escludo, per il momento, la mappatura di specifica architetturale ###
-mappatura_corso_architettura_eclettici.pdf
+### Escludo, per il momento, l'architettura startegica progetto in pdf - REGISTRO IMPLEMENTAZIONE ###
+architettura_startegica_eclettici.pdf
+REGISTRO_IMPLEMENTAZIONE_FUNZIONALE.md
 
 ### Escludo il token per git ###
 token
