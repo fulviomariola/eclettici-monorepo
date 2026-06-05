@@ -31,3 +31,9 @@ buildNumber.properties
 .env
 .env.*
 docker-compose.override.yml
+
+### Escludo, per il momento, la mappatura di specifica architetturale ###
+mappatura_corso_architettura_eclettici.pdf
+
+### Escludo il token per git ###
+token
