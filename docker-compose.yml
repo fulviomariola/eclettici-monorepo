@@ -8,12 +8,27 @@ services:
     ports:
       - "5433:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - eclettici_pgdata:/var/lib/postgresql/data
+    networks:
+      - eclettici_net
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: eclettici-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "8083:80"
+    volumes:
+      - eclettici_dmin_datapga:/var/lib/pgadmin  # da aggiungere per salvare in memoria il db quando faccio docker-compose down
     networks:
       - eclettici_net
 
 volumes:
-  pgdata:
+  eclettici_pgdata:
+  eclettici_dmin_datapga: # da aggiungere per salvare in memoria il db quando faccio docker-compose down
 
 networks:
   eclettici_net:

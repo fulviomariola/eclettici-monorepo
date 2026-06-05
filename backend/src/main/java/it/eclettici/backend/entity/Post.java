@@ -1,6 +1,8 @@
 package it.eclettici.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -16,6 +18,7 @@ public class Post {
     private User author;
 
     @Column(nullable = false)
+    @NotBlank(message = "Il titolo del post è obbligatorio e non può essere vuoto")
     private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false)

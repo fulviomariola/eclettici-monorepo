@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Escludo, per il momento, la mappatura di specifica architetturale ###
+mappatura_corso_architettura_eclettici.pdf
