@@ -15,8 +15,10 @@ import java.util.NoSuchElementException;
 public class GlobalExceptionHandler {
 
     // 1. IL PRIMO VIGILE (Per il Test A - Dato non trovato, rilancia status 404
-    // ad un errore che è 500 Internal Server Error)
-    @ExceptionHandler(NoSuchElementException.class)
+    // ad un errore che è 500 Internal Server Error).
+    // Il vigile si attiva solo ed esclusivamente se nel codice viene lanciata un'eccezione
+    // di tipo java.util.NoSuchElementException (che è un'eccezione nativa di Java)
+    /* @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<Map<String, String>> handleNotFoundException(NoSuchElementException ex) {
 
         // Creiamo un pacchetto JSON pulito e personalizzato
@@ -26,6 +28,23 @@ public class GlobalExceptionHandler {
         errorResponse.put("dettaglio", "L'ID specificato non corrisponde a nessun elemento nel database.");
 
         // Restituiamo il pacchetto dicendo a Spring di usare il codice HTTP 404 (invece del 500)
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+    */
+
+
+    // 1. IL PRIMO VIGILE (Gestisce sia NoSuchElementException che la nostra ResourceNotFoundException custom)
+    @ExceptionHandler({NoSuchElementException.class, ResourceNotFoundException.class})
+    public ResponseEntity<Map<String, String>> handleNotFoundException(RuntimeException ex) {
+
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("status", "404");
+        errorResponse.put("errore", "Risorsa non trovata");
+
+        // Usando ex.getMessage() il messaggio diventerà dinamico!
+        // Se l'errore arriva dal CommentService, leggerai l'ID preciso del Post o dell'Utente mancante.
+        errorResponse.put("dettaglio", ex.getMessage() != null ? ex.getMessage() : "L'ID specificato non corrisponde a nessun elemento.");
+
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 

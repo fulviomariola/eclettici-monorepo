@@ -1,6 +1,9 @@
 package it.eclettici.backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -19,7 +22,9 @@ public class Comment {
     @JoinColumn(name = "author_id", nullable = false)
     private User author;
 
-    @Column(columnDefinition = "TEXT", nullable = false)
+    @Column(name = "content", length = 1000, nullable = false)
+    @Size(max = 1000, message = "Il commento non può superare i 1000 caratteri")
+    @NotBlank(message = "Il contenuto del commento non può essere vuoto")
     private String content;
 
     @Column(nullable = false)
