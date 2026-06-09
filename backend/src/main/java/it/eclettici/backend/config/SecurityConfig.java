@@ -25,10 +25,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Disabilitiamo il CSRF (necessario per le API REST stateless che usano Postman/Frontend)
+                // 1. Attiviamo il CORS con la configurazione personalizzata descritta sotto
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // 2. Disabilitiamo il CSRF (necessario per le API REST stateless che usano Postman/Frontend)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // 2. Configurazione delle regole sugli URL
+                // 3. Configurazione delle regole sugli URL
                 .authorizeHttpRequests(auth -> auth
                         // --- ENDPOINT PUBBLICI ---
                         // Chiunque può vedere i servizi e inviare un messaggio di contatto
@@ -54,6 +57,30 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+
+        // Autorizza esplicitamente l'URL del frontend Angular
+        configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
+
+        // Abilita i metodi HTTP necessari per le operazioni CRUD e pre-flight (OPTIONS)
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+
+        // Consente gli header standard per il passaggio di JSON e token di autenticazione
+        configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+
+        // Permette al browser di leggere l'header Authorization (utile per i futuri token JWT)
+        configuration.setExposedHeaders(java.util.List.of("Authorization"));
+
+        // Consente l'invio di credenziali (cookie, HTTP Basic, ecc.) se necessario
+        configuration.setAllowCredentials(true);
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); // Applica la regola a tutti gli endpoint
+        return source;
     }
 
     /**

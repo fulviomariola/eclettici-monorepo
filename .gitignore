@@ -27,6 +27,34 @@ buildNumber.properties
 *.ear
 *.log
 
+# ==========================================
+# ☕ JAVA / SPRING BOOT & IDE CONFIGURATIONS
+# ==========================================
+.mvn/
+mvnw
+mvnw.cmd
+
+# ==========================================
+# 🅰️ ANGULAR / NODE.JS (MONOREPO MATCHING)
+# ==========================================
+# Dipendenze e cache pesanti
+**/node_modules/
+**/.angular/
+
+# Output di compilazione e build
+**/dist/
+**/tmp/
+**/out-tsc/
+
+# Log di sistema ed errori di pacchetti
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# File di sistema operativi
+.DS_Store
+Thumbs.db
+
 # Infrastructure / Docker / Secrets
 .env
 .env.*

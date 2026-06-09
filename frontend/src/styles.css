@@ -1,0 +1,54 @@
+/* Importazione dei font professionali da Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* --- PALETTE COLORI (DESIGN TOKENS) --- */
+  --bg-primary: #f8fafc;       /* Grigio chiarissimo per lo sfondo generale */
+  --bg-surface: #ffffff;       /* Bianco per le card e i box dei moduli */
+  --text-main: #0f172a;        /* Slate scuro per il testo principale */
+  --text-muted: #64748b;       /* Grigio medio per descrizioni e testi secondari */
+
+  /* I Colori Identitari */
+  --color-primary: #1e40af;    /* Blu Deep Tech - Affidabilità e struttura */
+  --color-accent: #f97316;     /* Arancione Energetico - L'anima eclettica */
+  --color-success: #10b981;    /* Verde per conferme (es. e-mail inviata) */
+  --color-error: #ef4444;      /* Rosso per i blocchi di validazione (es. errore 400) */
+
+  /* --- TIPOGRAFIA --- */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* --- STRUTTURA --- */
+  --radius-md: 8px;            /* Arrotondamento standard per input e bottoni */
+  --transition-smooth: all 0.2s ease-in-out;
+}
+
+/* Reset standard del browser */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Classi di utilità riutilizzabili per i futuri componenti */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8; /* Scurimento controllato al passaggio del mouse */
+}/* You can add global styles to this file, and also import other style files */
