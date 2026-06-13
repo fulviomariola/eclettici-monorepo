@@ -1,0 +1,75 @@
+<div class="max-w-[500px] my-8 mx-auto p-6 bg-white rounded-xl shadow-lg border border-slate-100">
+
+  <h2 class="text-2xl font-bold text-slate-800 mb-1">Contatta gli Eclettici</h2>
+  <p class="text-slate-500 mb-6 text-sm">Compila il form per richiedere una consulenza o informazioni.</p>
+
+  <!-- Box Messaggio di Successo -->
+  @if (successMessage) {
+    <div class="p-4 mb-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 rounded-r-lg font-medium shadow-sm text-sm transition-all">
+      <div class="flex items-center">
+        <span class="mr-2">✔</span>
+        <span>{{ successMessage }}</span>
+      </div>
+    </div>
+  }
+
+  <!-- Box Elenco Errori -->
+  @if (errorMessages.length > 0) {
+    <div class="p-4 mb-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 rounded-r-lg font-medium shadow-sm text-sm transition-all">
+      <div class="flex items-start mb-1">
+        <span class="mr-2 font-bold">⚠</span>
+        <span class="font-semibold text-rose-800">Si sono verificati i seguenti problemi:</span>
+      </div>
+      <ul class="margin-0 pl-5 list-disc space-y-1">
+        @for (error of errorMessages; track error) {
+          <li>{{ error }}</li>
+        }
+      </ul>
+    </div>
+  }
+
+  <form (ngSubmit)="onSubmit()" class="space-y-4">
+
+    <!-- Campo Nome -->
+    <div>
+      <label class="block mb-1 text-sm font-semibold text-slate-700">Nome Referente *</label>
+      <input type="text" name="name" [(ngModel)]="formData.name" required
+             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 placeholder-slate-400 bg-slate-50/50 transition-all">
+    </div>
+
+    <!-- Campo Azienda -->
+    <div>
+      <label class="block mb-1 text-sm font-semibold text-slate-700">Nome Azienda (Opzionale)</label>
+      <input type="text" name="companyName" [(ngModel)]="formData.companyName"
+             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all">
+    </div>
+
+    <!-- Campo Email -->
+    <div>
+      <label class="block mb-1 text-sm font-semibold text-slate-700">Email *</label>
+      <input type="email" name="email" [(ngModel)]="formData.email" required
+             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all">
+    </div>
+
+    <!-- Campo Telefono -->
+    <div>
+      <label class="block mb-1 text-sm font-semibold text-slate-700">Telefono (Opzionale)</label>
+      <input type="text" name="phone" [(ngModel)]="formData.phone"
+             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all">
+    </div>
+
+    <!-- Campo Messaggio -->
+    <div>
+      <label class="block mb-1 text-sm font-semibold text-slate-700">Messaggio *</label>
+      <textarea name="message" [(ngModel)]="formData.message" required rows="4"
+                class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 font-sans bg-slate-50/50 transition-all"></textarea>
+    </div>
+
+    <!-- Pulsante di Invio -->
+    <button type="submit"
+            class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all active:transform active:scale-[0.98] cursor-pointer">
+      Invia Richiesta
+    </button>
+
+  </form>
+</div>
