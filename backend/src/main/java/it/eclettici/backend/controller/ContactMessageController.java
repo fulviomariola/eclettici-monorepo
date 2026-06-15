@@ -4,8 +4,7 @@ import it.eclettici.backend.entity.ContactMessage;
 import it.eclettici.backend.enums.ContactMessageStatus;
 import it.eclettici.backend.service.ContactMessageService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
+import it.eclettici.backend.dto.ContactRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -62,42 +61,5 @@ public class ContactMessageController {
 
         ContactMessage updatedMessage = contactMessageService.updateMessageStatus(id, status);
         return ResponseEntity.ok(updatedMessage);
-    }
-
-    /**
-     * DTO statico interno per la validazione del payload JSON in ingresso.
-     * Isola l'entità del database e protegge l'applicazione da inserimenti malevoli.
-     */
-    public static class ContactRequestDto {
-
-        @NotBlank(message = "Il nome del referente è obbligatorio")
-        private String name;
-
-        private String companyName;
-
-        @NotBlank(message = "L'email è obbligatoria")
-        @Email(message = "Formato email non valido")
-        private String email;
-
-        private String phone;
-
-        @NotBlank(message = "Il messaggio non può essere vuoto")
-        private String message;
-
-        // Getter e Setter
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-
-        public String getCompanyName() { return companyName; }
-        public void setCompanyName(String companyName) { this.companyName = companyName; }
-
-        public String getEmail() { return email; }
-        public void setEmail(String email) { this.email = email; }
-
-        public String getPhone() { return phone; }
-        public void setPhone(String phone) { this.phone = phone; }
-
-        public String getMessage() { return message; }
-        public void setMessage(String message) { this.message = message; }
     }
 }

@@ -2,8 +2,7 @@ package it.eclettici.backend.repository;
 
 import it.eclettici.backend.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
+import java.util.Optional;
 import java.util.UUID;
 
 /*
@@ -14,6 +13,7 @@ import java.util.UUID;
 * l'utente che sta tentando di scrivere un commento esiste nel database.
 * */
 
-@Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
+    Optional<User> findByEmail(String email);
+    boolean existsByEmail(String email);
 }

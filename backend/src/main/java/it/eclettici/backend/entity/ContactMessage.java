@@ -41,6 +41,8 @@ public class ContactMessage {
     private ContactMessageStatus status;
 
     // Metodo di ciclo di vita di Hibernate per impostare automaticamente la data prima dell'insert
+    // @PrePersist --> Un intercettore del ciclo di vita che automatizza l'inserimento dei timestamp di sistema,
+    // garantendo l'integrità del dato temporale lato server.
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

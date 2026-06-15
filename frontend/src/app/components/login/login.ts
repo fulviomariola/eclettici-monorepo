@@ -1,7 +1,7 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, UserRegistrationDto } from '../../services/auth';
+import {AuthService, LoginDto, UserRegistrationDto} from '../../services/auth';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +14,8 @@ export class LoginComponent {
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
-  formData: UserRegistrationDto = {
+  // Tipizza il form con LoginDto: ora contiene solo ed esclusivamente ciò che serve
+  formData: LoginDto = {
     email: '',
     password: ''
   };
@@ -36,12 +37,13 @@ export class LoginComponent {
 
         this.cdr.detectChanges();
 
-        // Facciamo un piccolo redirect simulato o pulizia dopo 1.5 secondi
+        // Reindirizzamento immediato alla dashboard dopo 1 secondo per mostrare il banner verde
         setTimeout(() => {
           // Qui potremo reindirizzare l'utente alla dashboard del negozio o dello studente
           // per ora puliamo solo i messaggi
           this.successMessage = null;
-          this.cdr.detectChanges();
+          this.router.navigate(["/dashboard"])
+          //this.cdr.detectChanges();
         }, 1500);
       },
       error: (errore) => {

@@ -3,11 +3,8 @@ package it.eclettici.backend.controller;
 import it.eclettici.backend.entity.Post;
 import it.eclettici.backend.service.PostService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
+import it.eclettici.backend.dto.PostResponseDto;
+import it.eclettici.backend.dto.PostRequestDto;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -69,58 +66,6 @@ public class PostController {
         }
 
         return dto;
-    }
-
-
-    /**
-     * DTO in ingresso (Payload da Postman/Frontend)
-     */
-    public static class PostRequestDto {
-
-        @NotBlank(message = "Il titolo del post è obbligatorio")
-        private String title;
-
-        @NotBlank(message = "Il contenuto del post è obbligatorio")
-        private String content;
-
-        @NotNull(message = "L'ID dell'autore è obbligatorio")
-        private UUID authorId;
-
-        // Metodi Getter e Setter
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
-
-        public String getContent() { return content; }
-        public void setContent(String content) { this.content = content; }
-
-        public UUID getAuthorId() { return authorId; }
-        public void setAuthorId(UUID authorId) { this.authorId = authorId; }
-    }
-
-    /**
-     * DTO IN USCITA (Risposta ottimizzata per il Frontend)
-     */
-    public static class PostResponseDto {
-        private UUID id;
-        private String title;
-        private String content;
-        private LocalDateTime createdAt;
-        private UUID authorId;
-
-        public UUID getId() { return id; }
-        public void setId(UUID id) { this.id = id;  }
-
-        public String getTitle() { return title; }
-        public void setTitle(String title) { this.title = title; }
-
-        public String getContent() { return content; }
-        public void setContent(String content) { this.content = content; }
-
-        public LocalDateTime getCreatedAt() { return createdAt; }
-        public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-
-        public UUID getAuthorId() { return authorId; }
-        public void setAuthorId(UUID authorId) { this.authorId = authorId; }
     }
 }
 

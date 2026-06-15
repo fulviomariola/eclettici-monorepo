@@ -1,0 +1,30 @@
+<div class="min-h-screen bg-slate-50 p-6">
+  <div class="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+
+    <div class="flex justify-between items-center border-b border-slate-100 pb-6 mb-6">
+      <div>
+        <h1 class="text-3xl font-bold text-slate-800">Area Riservata Eclettici</h1>
+        <p class="text-slate-500 text-sm">Benvenuto nella tua console di gestione</p>
+      </div>
+      <button (click)="onLogout()"
+              class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-lg text-sm transition-all cursor-pointer">
+        Disconnetti
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
+        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Account Attivo</h3>
+        <p class="text-lg font-medium text-slate-800">{{ userEmail }}</p>
+      </div>
+
+      <div class="p-6 bg-slate-50 rounded-xl border border-slate-100">
+        <h3 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Ruolo Permessi</h3>
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+          {{ userRole }}
+        </span>
+      </div>
+    </div>
+
+  </div>
+</div>

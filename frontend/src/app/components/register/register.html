@@ -1,51 +1,67 @@
-<div class="max-w-[500px] my-8 mx-auto p-6 bg-white rounded-xl shadow-lg border border-slate-100">
+<div class="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+  <div class="sm:mx-auto sm:w-full sm:max-w-md">
+    <h2 class="text-center text-3xl font-extrabold text-slate-800">Crea il tuo account</h2>
+    <p class="mt-2 text-center text-sm text-slate-500">Unisciti alla community di Eclettici</p>
+  </div>
 
-  <h2 class="text-2xl font-bold text-slate-800 mb-1">Crea il tuo Account Eclettici</h2>
-  <p class="text-slate-500 mb-6 text-sm">Registrati per accedere ai corsi o per promuovere la tua attività.</p>
+  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+    <div class="bg-white py-8 px-4 shadow sm:rounded-xl sm:px-10 border border-slate-100">
 
-  @if (successMessage) {
-    <div class="p-4 mb-4 bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 rounded-r-lg font-medium shadow-sm text-sm transition-all">
-      <div class="flex items-center">
-        <span class="mr-2">✔</span>
-        <span>{{ successMessage }}</span>
-      </div>
+      @if (errorMessages.length > 0) {
+        <div class="mb-4 p-4 bg-rose-50 border-l-4 border-rose-500 rounded-r-lg text-rose-700 text-sm">
+          <p class="font-semibold mb-1">Si sono verificati i seguenti errori:</p>
+          <ul class="list-disc pl-5 space-y-1">
+            @for (msg of errorMessages; track msg) {
+              <li>{{ msg }}</li>
+            }
+          </ul>
+        </div>
+      }
+
+      <form (submit)="onRegister($event)" class="space-y-6">
+
+        <div>
+          <label for="nome" class="block text-sm font-medium text-slate-700">Nome</label>
+          <input type="text" id="nome" name="nome" [(ngModel)]="registrationData.nome"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label for="cognome" class="block text-sm font-medium text-slate-700">Cognome</label>
+          <input type="text" id="cognome" name="cognome" [(ngModel)]="registrationData.cognome"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label for="email" class="block text-sm font-medium text-slate-700">Indirizzo Email</label>
+          <input type="email" id="email" name="email" [(ngModel)]="registrationData.email"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
+          <input type="password" id="password" name="password" [(ngModel)]="registrationData.password"
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label for="ruolo" class="block text-sm font-medium text-slate-700">Tipo di Account</label>
+          <select id="ruolo" name="ruolo" [(ngModel)]="registrationData.ruolo"
+                  class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-slate-700">
+            <option value="">Seleziona un ruolo...</option>
+            <option value="STUDENT">Studente</option>
+            <option value="STORE">Gestore Negozio</option>
+          </select>
+        </div>
+
+        <div>
+          <button type="submit"
+                  class="w-full flex justify-center py-2 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors cursor-pointer">
+            Registrati
+          </button>
+        </div>
+      </form>
+
     </div>
-  }
-
-  @if (errorMessages.length > 0) {
-    <div class="p-4 mb-4 bg-rose-50 border-l-4 border-rose-500 text-rose-700 rounded-r-lg font-medium shadow-sm text-sm transition-all">
-      <div class="flex items-start mb-1">
-        <span class="mr-2 font-bold">⚠</span>
-        <span class="font-semibold text-rose-800">Errore di registrazione:</span>
-      </div>
-      <ul class="margin-0 pl-5 list-disc space-y-1">
-        @for (error of errorMessages; track error) {
-          <li>{{ error }}</li>
-        }
-      </ul>
-    </div>
-  }
-
-  <form (ngSubmit)="onRegister()" class="space-y-4">
-
-    <div>
-      <label class="block mb-1 text-sm font-semibold text-slate-700">Indirizzo Email *</label>
-      <input type="email" name="email" [(ngModel)]="formData.email" required
-             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all"
-             placeholder="esempio@dominio.com">
-    </div>
-
-    <div>
-      <label class="block mb-1 text-sm font-semibold text-slate-700">Password *</label>
-      <input type="password" name="password" [(ngModel)]="formData.password" required
-             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all"
-             placeholder="••••••••">
-    </div>
-
-    <button type="submit"
-            class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all active:transform active:scale-[0.98] cursor-pointer">
-      Registrati
-    </button>
-
-  </form>
+  </div>
 </div>

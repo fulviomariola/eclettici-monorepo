@@ -6,32 +6,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.validation.FieldError;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    // 1. IL PRIMO VIGILE (Per il Test A - Dato non trovato, rilancia status 404
-    // ad un errore che è 500 Internal Server Error).
-    // Il vigile si attiva solo ed esclusivamente se nel codice viene lanciata un'eccezione
-    // di tipo java.util.NoSuchElementException (che è un'eccezione nativa di Java)
-    /* @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<Map<String, String>> handleNotFoundException(NoSuchElementException ex) {
-
-        // Creiamo un pacchetto JSON pulito e personalizzato
-        Map<String, String> errorResponse = new HashMap<>();
-        errorResponse.put("status", "404");
-        errorResponse.put("errore", "Risorsa non trovata");
-        errorResponse.put("dettaglio", "L'ID specificato non corrisponde a nessun elemento nel database.");
-
-        // Restituiamo il pacchetto dicendo a Spring di usare il codice HTTP 404 (invece del 500)
-        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-    */
-
 
     // 1. IL PRIMO VIGILE (Gestisce sia NoSuchElementException che la nostra ResourceNotFoundException custom)
     @ExceptionHandler({NoSuchElementException.class, ResourceNotFoundException.class})
@@ -61,8 +45,30 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
-    // 3. IL TERZO VIGILE (Per il Bodyguard - Dati non validi in ingresso)
+    // 3. IL TERZO VIGILE (Aggiornato per gestire errori MULTIPLI in ingresso)
     @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+
+        Map<String, Object> errorResponse = new HashMap<>();
+        errorResponse.put("status", "400");
+        errorResponse.put("errore", "Validazione fallita");
+
+        // 1. Raccogliamo TUTTI i messaggi di errore dei campi non validi
+        List<String> listaErrori = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+
+        // 2. Inseriamo la lista intera nel JSON con la chiave "errori"
+        errorResponse.put("errori", listaErrori);
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+
+    // 3. IL TERZO VIGILE (Per il Bodyguard - Dati non validi in ingresso)
+/*    @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
 
         Map<String, String> errorResponse = new HashMap<>();
@@ -75,5 +81,5 @@ public class GlobalExceptionHandler {
         errorResponse.put("dettaglio", errorMessage);
 
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+    }*/
 }

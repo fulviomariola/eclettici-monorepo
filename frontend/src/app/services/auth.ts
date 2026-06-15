@@ -2,9 +2,19 @@ import { Injectable, inject } from '@angular/core';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+// DTO specifico e rigido per la Registrazione (tutti i campi sono obbligatori)
 export interface UserRegistrationDto {
+  nome?: string;
+  cognome?: string;
   email: string;
   password:  string;
+  ruolo?: string;
+}
+
+// DTO specifico e pulito per il Login
+export interface LoginDto {
+  email: string;
+  password: string;
 }
 
 // Interfaccia per mappare la risposta del server in caso di login riuscito
@@ -19,7 +29,7 @@ export interface LoginResponseDto {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8082/api/auth';
+  private apiUrl = 'http://192.168.1.30:8082/api/auth';
 
   registraUtente(dati: UserRegistrationDto): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/register`, dati);

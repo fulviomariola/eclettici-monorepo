@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class BackendApplication {
 
     public static void main(String[] args) {
+        // Avvia il contesto di Spring e l'application server integrato
         SpringApplication.run(BackendApplication.class, args);
     }
 

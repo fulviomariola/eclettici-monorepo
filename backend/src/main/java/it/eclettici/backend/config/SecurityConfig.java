@@ -37,8 +37,13 @@ public class SecurityConfig {
                         // Chiunque può vedere i servizi e inviare un messaggio di contatto
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
+
                         // Nuove rotte abilitate
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
+
+                        // Permettere la registrazione e il login a chiunque
+                        .requestMatchers("/api/auth/**").permitAll()
+                        // ----------------------------------------------
 
                         // --- ENDPOINT PROTETTI (Solo ADMIN) ---
                         // La gestione dei contatti (lettura/modifica) è riservata all'amministratore
@@ -64,7 +69,10 @@ public class SecurityConfig {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
 
         // Autorizza esplicitamente l'URL del frontend Angular
-        configuration.setAllowedOrigins(java.util.List.of("http://localhost:4200"));
+        configuration.setAllowedOriginPatterns(java.util.List.of(
+                "http://localhost:4200",
+                "http://192.168.1.*:4200"
+        ));
 
         // Abilita i metodi HTTP necessari per le operazioni CRUD e pre-flight (OPTIONS)
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
@@ -83,26 +91,28 @@ public class SecurityConfig {
         return source;
     }
 
-    /**
-     * Configurazione temporanea di un utente in memoria per i test su Postman.
-     * Sostituisce temporaneamente la tabella del DB per convalidare lo scudo di sicurezza.
-     */
-    @Bean
-    public UserDetailsService userDetailsService(PasswordEncoder passwordEncoder) {
-        UserDetails admin = User.builder()
-                .username("admin@eclettici.it")
-                .password(passwordEncoder.encode("admin123"))
-                .roles("ADMIN")
-                .build();
 
-        return new InMemoryUserDetailsManager(admin);
-    }
-
-    /**
-     * Definizione dell'algoritmo di cifratura delle password (BCrypt).
-     */
+    // ---------------DA COMMENTARE QUANDO SONO IN PRODUZIONE-----------------------
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        // Creiamo un encoder delegato che capisce i prefissi
+        String idForEncode = "bcrypt";
+        java.util.Map<String, PasswordEncoder> encoders = new java.util.HashMap<>();
+
+        encoders.put("bcrypt", new BCryptPasswordEncoder());
+        // Il NoOpPasswordEncoder serve per leggere le password in chiaro (NON USARE IN PRODUZIONE)
+        encoders.put("noop", org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance());
+
+        org.springframework.security.crypto.password.DelegatingPasswordEncoder delegatingPasswordEncoder =
+                new org.springframework.security.crypto.password.DelegatingPasswordEncoder(idForEncode, encoders);
+
+        // Questa è la riga magica: se la password nel DB non ha un prefisso (es. non inizia con {bcrypt}),
+        // usa l'encoder "noop" (in chiaro) come fallback invece di lanciare un'eccezione.
+        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(
+                org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance()
+        );
+
+        return delegatingPasswordEncoder;
     }
+
 }
