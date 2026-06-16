@@ -16,8 +16,8 @@ public class PostRequestDto {
     @NotBlank(message = "Il contenuto del post è obbligatorio")
     private String content;
 
-    @NotNull(message = "L'ID dell'autore è obbligatorio")
-    private UUID authorId;
+  //  @NotNull(message = "L'ID dell'autore è obbligatorio")
+  //  private UUID authorId;
 
     // Metodi Getter e Setter
     public String getTitle() { return title; }
@@ -26,6 +26,6 @@ public class PostRequestDto {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public UUID getAuthorId() { return authorId; }
-    public void setAuthorId(UUID authorId) { this.authorId = authorId; }
+ //   public UUID getAuthorId() { return authorId; }
+  //  public void setAuthorId(UUID authorId) { this.authorId = authorId; }
 }

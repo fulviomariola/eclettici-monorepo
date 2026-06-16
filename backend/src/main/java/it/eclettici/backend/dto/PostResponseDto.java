@@ -1,6 +1,7 @@
 package it.eclettici.backend.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -12,6 +13,7 @@ public class PostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private UUID authorId;
+    private List<CommentResponseDto> comments;
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id;  }
@@ -27,4 +29,7 @@ public class PostResponseDto {
 
     public UUID getAuthorId() { return authorId; }
     public void setAuthorId(UUID authorId) { this.authorId = authorId; }
+
+    public List<CommentResponseDto> getComments() { return comments; }
+    public void setComments(List<CommentResponseDto> comments) { this.comments = comments; }
 }
