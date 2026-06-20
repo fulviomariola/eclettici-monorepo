@@ -41,21 +41,27 @@ public class PostController {
      * Recupera l'utente autenticato da Spring Security tramite @AuthenticationPrincipal.
      */
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'STORE')")  // Blindiamo l'accesso a livello di metodo
-    public ResponseEntity<PostResponseDto> createPost(@Valid @RequestBody PostRequestDto requestDto,
-                                                      @AuthenticationPrincipal UserDetails userDetails) {  // <--- Intercetta la sessione attiva
-        Post post = new Post();
-        post.setTitle(requestDto.getTitle());
-        post.setContent(requestDto.getContent());
+    public ResponseEntity<PostResponseDto> createPost(
+            @Valid @RequestBody PostRequestDto requestDto) {
 
-        // Recuperiamo l'UUID dell'autore dal database usando l'email estratta dall'autenticazione HTTP Basic
-        User currentUser = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente non trovato nel sistema"));
+        // 1. Creiamo l'oggetto Post (Entità) e gli diamo i dati del DTO
+        Post postEntity = new Post();
+        postEntity.setTitle(requestDto.getTitle());
+        postEntity.setContent(requestDto.getContent());
+        postEntity.setIsPrivate(requestDto.getIsPrivate() != null ? requestDto.getIsPrivate() : false);
 
-        // Passiamo l'oggetto post e l'ID dell'utente recuperato in sicurezza sul backend
-        Post savedPost = postService.createPost(post, currentUser.getId());
+        // 2. Ora passiamo i DUE parametri corretti che il Service si aspetta (l'entità + l'UUID)
+        Post savedPost = postService.createPost(postEntity, requestDto.getAuthorId());
 
-        return new ResponseEntity<>(convertToDto(savedPost), HttpStatus.CREATED);
+        // 3. Mappiamo il risultato sul DTO di risposta per Angular
+        PostResponseDto responseDto = new PostResponseDto();
+        responseDto.setId(savedPost.getId());
+        responseDto.setTitle(savedPost.getTitle());
+        responseDto.setContent(savedPost.getContent());
+        responseDto.setIsPrivate(savedPost.getIsPrivate());
+        responseDto.setAuthorId(savedPost.getAuthor().getId());
+
+        return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
     /**

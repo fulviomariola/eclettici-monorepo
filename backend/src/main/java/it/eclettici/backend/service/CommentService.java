@@ -49,4 +49,32 @@ public class CommentService {
         // 4. Persistenza a database
         return commentRepository.save(comment);
     }
+
+    /**
+     * Modificare i commento associato a un post.
+     */
+    public Comment updateComment(UUID commentId, String newContent) {
+        // 1. Recuperiao commento esistente
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Commento non trovato con ID: " + commentId));
+
+        // 2. Aggiornare il testo
+        comment.setContent(newContent);
+
+        // 3. Salvare/restiruire entità aggiornata
+        return commentRepository.save(comment);
+    }
+
+    /**
+     * Elimina commento associato a un post.
+     */
+    @Transactional
+    public void deleteComment(UUID commentId) {
+        // 1. Verifichiamo se il commento esiste davvero nel sistema
+        if (!commentRepository.existsById(commentId)) {
+            throw new RuntimeException("Commento non trovato con ID: " + commentId);
+        }
+        // 2. Cancellazione effettiva dal database
+        commentRepository.deleteById(commentId);
+    }
 }

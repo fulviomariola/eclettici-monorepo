@@ -32,19 +32,17 @@ public class CommentController {
      * Endpoint per la creazione di un commento.
      * Qualsiasi utente autenticato (STUDENT, STORE, ADMIN) può commentare.
      */
+    //@PreAuthorize("isAuthenticated()") // Garantisce che solo gli utenti loggati possano accedere
     @PostMapping
-    @PreAuthorize("isAuthenticated()") // Garantisce che solo gli utenti loggati possano accedere
     public ResponseEntity<CommentResponseDto> createComment(
             @PathVariable UUID postId,
-            @Valid @RequestBody CommentRequestDto requestDto,
-            @AuthenticationPrincipal UserDetails userDetails) {
+            @Valid @RequestBody CommentRequestDto requestDto) {
+            // @AuthenticationPrincipal UserDetails userDetails) {
 
-        // Recuperiamo l'utente reale dall'email presente nel contesto di sicurezza HTTP Basic
-        User currentUser = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new RuntimeException("Utente autenticato non trovato nel sistema"));
-
+        // NUOVO CODICE FLUIDO E STATELESS:
+        Comment savedComment = commentService.createComment(postId, requestDto.getAuthorId(), requestDto.getContent());
         // Esecuzione della logica di business sul Service passando i dati protetti
-        Comment savedComment = commentService.createComment(postId, currentUser.getId(), requestDto.getContent());
+        //Comment savedComment = commentService.createComment(postId, currentUser.getId(), requestDto.getContent());
 
         // Mappatura pulita sul DTO di risposta
         CommentResponseDto responseDto = new CommentResponseDto();
@@ -55,5 +53,33 @@ public class CommentController {
         responseDto.setAuthorId(savedComment.getAuthor().getId());
 
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{commentId}")
+    public ResponseEntity<CommentResponseDto> updateComment(
+            @PathVariable UUID commentId,
+            @Valid @RequestBody CommentRequestDto requestDto) {
+
+        // Invocare servizio per aggiornare il testo
+        Comment updateComment = commentService.updateComment(commentId, requestDto.getContent());
+
+        // Mappare entità aggiornata sul DTO di risposta
+        CommentResponseDto responseDto = new CommentResponseDto();
+        responseDto.setId(updateComment.getId());
+        responseDto.setContent(updateComment.getContent());
+        responseDto.setCreatedAt(updateComment.getCreatedAt());
+        responseDto.setPostId(updateComment.getPost().getId());
+        responseDto.setAuthorId(updateComment.getAuthor().getId());
+
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @DeleteMapping("/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable UUID commentId) {
+        // Invocheremo la logica sul service passando l'ID del commento da rimuovere
+        commentService.deleteComment(commentId);
+
+        // Risposta standard REST 204 per le cancellazioni andate a buon fine
+        return ResponseEntity.noContent().build();
     }
 }

@@ -41,6 +41,7 @@ public class SecurityConfig {
 
                         // Permettere la registrazione e il login a chiunque
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/posts/**").permitAll()
                         // ----------------------------------------------
 
                         // --- ENDPOINT PROTETTI (Solo ADMIN) ---

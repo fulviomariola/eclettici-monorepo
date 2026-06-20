@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 // DTO in ingresso: inviamo solo il contenuto text, l'autore lo decide il backend!
 export interface CommentRequestDto {
   content: string;
+  authorId: string;
 }
 
 // DTO in uscita: la risposta che arriva dal DB con tutti gli ID separati
@@ -37,5 +38,24 @@ export class CommentService {
    */
   createComment(postId: string, comment: CommentRequestDto): Observable<CommentResponseDto> {
     return this.http.post<CommentResponseDto>(this.getApiUrl(postId), comment, this.httpOptions);
+  }
+
+  /**
+   * Modifica commenti
+   * */
+  updateComment(postId: string, commentId: string, comment: CommentRequestDto): Observable<CommentResponseDto> {
+    return this.http.put<CommentResponseDto>(
+      `http://192.168.1.30:8082/api/posts/${postId}/comments/${commentId}`,
+      comment,
+      this.httpOptions
+    );
+  }
+
+  /**
+   * Cancellazione commenti
+   * */
+  deleteComment(postId: string,commentId: string): Observable<void> {
+    // Nota: adatta l'URL in base a come risponde il tuo endpoint Spring Boot per l'eliminazione
+    return this.http.delete<void>(`http://192.168.1.30:8082/api/posts/${postId}/comments/${commentId}`, this.httpOptions);
   }
 }

@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PostService, PostResponseDto, PostRequestDto } from '../../services/post';
-import { CommentService } from '../../services/comment';
+import {CommentRequestDto, CommentService} from '../../services/comment';
 
 @Component({
   selector: 'app-dashboard',
@@ -20,6 +20,11 @@ export class DashboardComponent implements OnInit {
   userEmail: string | null = '';
   currentUserId: string = '';
   userRole: string = '';
+  // Traccia l'ID del commento che si sta modificando (se null, nessun commento è in edit)
+  editingCommentId: string | null = null;
+
+  // Contiene i dati temporanei del commento che si sta modificando
+  editCommentData: { content: string } = { content: '' };
 
   // Lista che conterrà i post recuperati dal DB
   postsList: PostResponseDto[] = [];
@@ -48,6 +53,42 @@ export class DashboardComponent implements OnInit {
       content: post.content,
       isPrivate: post.isPrivate
     };
+  }
+
+  onStartEditComment(comment: any): void {
+    this.editingCommentId = comment.id;
+    this.editCommentData = { content: comment.content };
+  }
+
+  onCancelEditComment(): void {
+    this.editingCommentId = null;
+    this.editCommentData = { content: '' };
+  }
+
+  onSaveEditComment(postId: string, commentId: string): void {
+    const testoPulito = this.editCommentData.content?.trim();
+
+    if (!testoPulito) {
+      return;
+    }
+
+    const payload: CommentRequestDto = {
+      content: testoPulito,
+      authorId: this.currentUserId  // Mantenere ID autore stateles
+    };
+
+    this.commentService.updateComment(postId, commentId, payload).subscribe({
+      next: () => {
+        this.editingCommentId = null;
+        this.loadPosts();
+    },
+      error: (err) => {
+        console.error('Errore durante la modifica del commento', err);
+        this.errorMessage = 'Impossibile modificare il commento in questo momento.';
+        this.cdr.detectChanges();
+      }
+    });
+
   }
 
   // 2. Annullare modifica
@@ -145,11 +186,11 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    // Prepariamo il payload pulito da inviare
-    const payload: PostRequestDto = {
-      title: titoloInviato,
-      content: contenutoInviato,
-      isPrivate: this.newPostData.isPrivate
+    const payload = {
+      title: this.newPostData.title,
+      content: this.newPostData.content,
+      isPrivate: this.newPostData.isPrivate,
+      authorId: this.currentUserId // L'ID dell'utente loggato
     };
 
     this.postService.createPost(payload).subscribe({
@@ -191,7 +232,10 @@ export class DashboardComponent implements OnInit {
       return;
     }
 
-    this.commentService.createComment(postId, { content: testoPulito }).subscribe({
+    this.commentService.createComment(postId, {
+      content: testoPulito,
+      authorId: this.currentUserId
+    }).subscribe({
       next: () => {
         // Svuotare il campo di testo specifico di questo post
         this.commentInputs[postId] = '';
@@ -202,6 +246,21 @@ export class DashboardComponent implements OnInit {
       error: (err) => {
         console.error('Errore durante l\'invio del commento',err);
         this.errorMessage = 'Impossibile pubblicare il commento in questo momento.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onDeleteComment(postId: string, commentId: string): void {
+    // 1. Chiamiamo il metodo del servizio appena creato
+    this.commentService.deleteComment(postId,commentId).subscribe({
+      next: () => {
+        // 2. Se l'eliminazione ha successo, aggiorno la bacheca
+        this.loadPosts();
+      },
+      error: (err) => {
+        console.log('Errore durante l\'eliminazione del commento', err);
+        this.errorMessage = 'Impossibile eliminare il commento in questo momento.';
         this.cdr.detectChanges();
       }
     });
