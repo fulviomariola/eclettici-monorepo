@@ -1,5 +1,7 @@
 package it.eclettici.backend.entity;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -30,9 +32,13 @@ public class Post {
     private Boolean isPremium = false;
 
     @Column(nullable = false)
+    private Boolean isPrivate = false;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
     private List<Comment> comments = new ArrayList<>();
 
     public UUID getId() { return id; }
@@ -45,6 +51,10 @@ public class Post {
     public void setContent(String content) { this.content = content; }
     public Boolean getIsPremium() { return isPremium; }
     public void setIsPremium(Boolean premium) { isPremium = premium; }
+
+    public Boolean getIsPrivate() { return isPrivate; }
+    public void setIsPrivate(Boolean aPrivate) { isPrivate = aPrivate; }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<Comment> getComments() { return comments; }

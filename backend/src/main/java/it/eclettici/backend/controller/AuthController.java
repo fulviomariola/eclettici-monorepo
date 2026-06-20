@@ -58,22 +58,29 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> loginUser(Authentication authentication) {
+    public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginData) {
         // Ricevo oggetto Authentication direttamente da Spring Security
-        String email = authentication.getName();
+        String emailInviata = loginData.get("email");
+        String passwordInviata = loginData.get("password");
 
-        // Recupero ruolo di utente dale autorità registrate
-        String role = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .findFirst()
-                .orElse("ROLE_STUDENT");   // Fallback di sicurezza
+        // 1. Cerco utente nel DB tramite email
+        User user = userRepository.findByEmail(emailInviata)
+                .orElse(null);
 
-        // Pulire stringa da prefisso ROLE_ per comodità Frontend (es. "ROLE_STUDENTE" --> "STUDENTE")
-        String cleanedRole = role.replace("ROLE_", "");
+        // 2. Verifico se esiste utente e se password coincide nel DB
+        if (user == null || !passwordEncoder.matches(passwordInviata, user.getPassword())) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("dettaglio", "Credenziali non valide. Controlla email e password."));
+        }
 
-        // Restituire dettagli profilo utili a frontend per gestire sessione
+        // 3. Recupero ruolo reale
+        String cleanedRole = user.getRole().name();
+
+        // 4. RESITUIRE L'ID REALE AL FRONTEND
         return ResponseEntity.ok(Map.of(
-                "email", email,
+                "id", user.getId().toString(),  // ID dinamico che serve ad Angular!
+                "email", user.getEmail(),
                 "role", cleanedRole,
                 "messaggio", "Autenticazione eseguita con successo!"
         ));

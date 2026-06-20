@@ -2,13 +2,17 @@ package it.eclettici.backend.controller;
 
 import it.eclettici.backend.entity.Post;
 import it.eclettici.backend.entity.User;
+import it.eclettici.backend.enums.Role;
 import it.eclettici.backend.repository.UserRepository;
 import it.eclettici.backend.service.PostService;
 import jakarta.validation.Valid;
 import it.eclettici.backend.dto.PostResponseDto;
 import it.eclettici.backend.dto.PostRequestDto;
 import it.eclettici.backend.dto.CommentResponseDto;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -17,6 +21,7 @@ import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -57,13 +62,36 @@ public class PostController {
      * LETTURA DI TUTTI I POST: Qualsiasi utente autenticato (STUDENT, STORE, ADMIN) può leggerli.
      */
     @GetMapping
-    public ResponseEntity<List<PostResponseDto>> getAllPosts() {
-        List<Post> posts = postService.getAllPosts();
-        List<PostResponseDto> responseDtos = posts.stream()
+    @Transactional(readOnly = true)
+    public ResponseEntity<List<PostResponseDto>> getAllPosts(
+            @RequestParam UUID currentUserId,
+            @RequestParam Role userRole) {
+        // 1. Passiamo i parametri richiesti al Service per filtrare i dati a monte
+        List<Post> posts = postService.getAllPosts(currentUserId, userRole);
+
+        // 2. Trasformiamo la lista di entità in una lista di DTO protetti
+        List<PostResponseDto> dtos = posts.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
 
-        return ResponseEntity.ok(responseDtos);
+        return ResponseEntity.ok(dtos);
+    }
+
+    @PutMapping("/{id}")
+    @Transactional
+    public ResponseEntity<PostResponseDto> updatePost(
+            @PathVariable UUID id,
+            @RequestBody PostResponseDto updateDto,
+            @RequestParam UUID currentUserId) {
+        Post updatedPost = postService.updatePost(id, updateDto, currentUserId);
+        return ResponseEntity.ok(convertToDto(updatedPost));
+    }
+
+    @DeleteMapping("/{id}")
+    @Transactional
+    public ResponseEntity<Void> deletePost(@PathVariable UUID id) {
+        postService.deletePost(id);
+        return ResponseEntity.noContent().build();
     }
 
     /**
@@ -76,13 +104,16 @@ public class PostController {
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setCreatedAt(post.getCreatedAt());
+        dto.setPremium(post.getIsPremium());
+        dto.setIsPrivate(post.getIsPrivate());
 
         if (post.getAuthor() != null) {
             dto.setAuthorId(post.getAuthor().getId());
         }
 
         // MAPPATURA DEI COMMENTI: Trasformiamo ogni entità Comment in CommentResponseDto
-        if (post.getComments() != null) {
+       // if (post.getComments() != null) {
+        if (post.getComments() != null && !post.getComments().isEmpty()) {
             List<CommentResponseDto> commentDtos = post.getComments().stream()
                     .map(comment -> {
                         CommentResponseDto cDto = new CommentResponseDto();
@@ -91,9 +122,13 @@ public class PostController {
                         cDto.setCreatedAt(comment.getCreatedAt());
                         cDto.setPostId(comment.getPost().getId());
                         cDto.setAuthorId(comment.getAuthor().getId());
+
                         return  cDto;
                     })
                     .collect(Collectors.toList());
+            dto.setComments(commentDtos);
+        } else {
+            dto.setComments(new ArrayList<>());
         }
 
         return dto;

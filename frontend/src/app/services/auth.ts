@@ -19,6 +19,7 @@ export interface LoginDto {
 
 // Interfaccia per mappare la risposta del server in caso di login riuscito
 export interface LoginResponseDto {
+  id: string;
   email: string;
   role: string;
   messaggio: string;
@@ -38,13 +39,16 @@ export class AuthService {
   loginUtente(dati: UserRegistrationDto): Observable<LoginResponseDto> {
     // L'autenticazione HTTP Basic richiede le credenziali codificate in stringa btoa (Base64)
     // Formato richiesto dall'header: "Basic username:password"
-    const credentials = btoa(`${dati.email}:${dati.password}`);
+/*    const credentials = btoa(`${dati.email}:${dati.password}`);
     const headers = new HttpHeaders({
       'Authorization': `Basic ${credentials}`
     })
 
     // Inviare richiesta POST passando l'header di autorizzazione
-    return this.http.post<LoginResponseDto>(`${this.apiUrl}/login`, {}, { headers });
+    return this.http.post<LoginResponseDto>(`${this.apiUrl}/login`, {}, { headers });*/
+
+    // Inviamo direttamente i dati del form (email e password) nel Body della POST
+    return this.http.post<LoginResponseDto>(`${this.apiUrl}/login`, dati);
   }
 }
 

@@ -34,6 +34,7 @@ export class LoginComponent {
         // Per il momento salviamo i dati utente nel localStorage per simulare la sessione attiva
         localStorage.setItem('user_email', risposta.email);
         localStorage.setItem('user_role', risposta.role); // Contiene "STUDENT" o "STORE"
+        localStorage.setItem('user_id', risposta.id);
 
         this.cdr.detectChanges();
 

@@ -18,7 +18,8 @@ export class DashboardComponent implements OnInit {
   private commentService = inject(CommentService); // INIETTARE IL SERVIZIO
 
   userEmail: string | null = '';
-  userRole: string | null = '';
+  currentUserId: string = '';
+  userRole: string = '';
 
   // Lista che conterrà i post recuperati dal DB
   postsList: PostResponseDto[] = [];
@@ -26,19 +27,83 @@ export class DashboardComponent implements OnInit {
   // Modello per il form di creazione (usato solo se l'utente è STORE)
   newPostData: PostRequestDto = {
     title: '',
-    content: ''
+    content: '',
+    isPrivate: false
   };
 
   successMessage: string | null = null;
   errorMessage: string | null = null;
 
+  // Proprietà di supporto per la modifica
+  editingPostId: string | null = null;
+  editPostData: PostRequestDto = { title: '', content: '', isPrivate: false };
+  commentInputs: { [postId: string]: string } = {};
+
+  // 1. Attiva la modalità modifica sulla card del post
+  onStartEdit(post: PostResponseDto): void {
+    this.editingPostId = post.id;
+    // Popolare form di modifica con i dati attuali del post
+    this.editPostData = {
+      title: post.title,
+      content: post.content,
+      isPrivate: post.isPrivate
+    };
+  }
+
+  // 2. Annullare modifica
+  onCancelEdit(): void {
+    this.editingPostId = null;
+    this.editPostData = {title: '', content: '', isPrivate: false};
+}
+
+  // 3. Inviare PUT al Server
+  onSaveEdit(postId: string): void {
+    if (!this.editPostData.title.trim() || !this.editPostData.content.trim()) {
+      this.errorMessage = 'Titolo e contenuto non possono essere vuoti durante la modifica.';
+      return;
+    }
+
+
+    this.postService.updatePost(postId, this.editPostData, this.currentUserId).subscribe({
+      next: () => {
+        this.successMessage = 'Post aggiornato con successo';
+        this.editingPostId = null;  // Chiudere il form di modifica
+        this.loadPosts();   // Ricaricare bacheca aggiornata
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.successMessage = null;
+          this.cdr.detectChanges();
+        }, 5000);
+      },
+      error: (err) => {
+        console.error('Errore durante la modifica:', err);
+        this.errorMessage = 'Impossibile modificare il post. Verificare i permessi.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   ngOnInit(): void {
     // Recuperiamo i dati della sessione dal localStorage
     this.userEmail = localStorage.getItem('user_email');
-    this.userRole = localStorage.getItem('user_role');
+
+    // Recupero ruolo (se null assegno strinag vuota di fallback)
+    this.userRole = localStorage.getItem('user_role') || '';
+
+    // ORA LEGGIAMO L'ID REALE DAL LOCALSTORAGE (senza usare più il valore fisso)
+    this.currentUserId = localStorage.getItem('user_id') || '';
+
+    // CODICE REALE IN PRODUZIONE:
+    // Legge l'ID univoco assegnato a quel commerciante o studente dal database
+    //this.currentUserId = localStorage.getItem('user_id') || 'e7470635-c6da-4474-941a-eb8cf9b6a072';
+
+    // Per il momento id testo fisso preso da Postman
+    // ci è utile in fase di sviluppo e/o collaudo
+    //this.currentUserId = 'e7470635-c6da-4474-941a-eb8cf9b6a072';
 
     // Controllo di sicurezza base: se non ci sono dati, rimanda al login
-    if (!this.userEmail) {
+    if (!this.userEmail || !this.currentUserId) {
       void this.router.navigate(['/login']);
     }
 
@@ -47,9 +112,10 @@ export class DashboardComponent implements OnInit {
   }
 
   loadPosts(): void {
-    this.postService.getAllPosts().subscribe({
-      next: (posts) => {
-        this.postsList = posts;
+    this.postService.getAllPosts(this.currentUserId, this.userRole).subscribe({
+      next: (data) => {
+        this.postsList = data;
+        console.log('Post caricati con successo', this.postsList);
 
         // Svegliamo il motore grafico di Angular non appena i post arrivano dal backend!
         this.cdr.detectChanges();
@@ -71,6 +137,8 @@ export class DashboardComponent implements OnInit {
     // Estraiamo i valori per evitare letture asincrone sfasate
     const titoloInviato = this.newPostData.title?.trim();
     const contenutoInviato = this.newPostData.content?.trim();
+    // recupero valore booleano della checkbox del form
+    const privacyInviata = this.newPostData.isPrivate;
 
     if (!titoloInviato || !contenutoInviato) {
       this.errorMessage = 'Titolo e contenuto sono obbligatori.';
@@ -80,18 +148,19 @@ export class DashboardComponent implements OnInit {
     // Prepariamo il payload pulito da inviare
     const payload: PostRequestDto = {
       title: titoloInviato,
-      content: contenutoInviato
+      content: contenutoInviato,
+      isPrivate: this.newPostData.isPrivate
     };
 
     this.postService.createPost(payload).subscribe({
-      next: (savedPost) => {
+      next: () => {
 
         // Forza la pulizia dei vecchi residui
         this.errorMessage = null;
         this.successMessage = 'Post pubblicato con successo!';
 
         // Svuotiamo il form immediatamente
-        this.newPostData = { title: '', content: '' };
+        this.newPostData = { title: '', content: '', isPrivate: false };
 
         // Ricarichiamo la bacheca
         this.loadPosts();
@@ -113,7 +182,8 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  onAddComment(postId: string, content: string): void {
+  onAddComment(postId: string): void {
+    const content = this.commentInputs[postId];
     const testoPulito = content?.trim();
 
     // Se l'utente non ha scritto nulla, interrompiamo subito senza chiamare il server
@@ -122,9 +192,11 @@ export class DashboardComponent implements OnInit {
     }
 
     this.commentService.createComment(postId, { content: testoPulito }).subscribe({
-      next: (savedComment) => {
-        // Trucco strategico: ricarichiamo tutti i post.
-        // Poiché il backend ora include i commenti in "getAllPosts", la bacheca si aggiornerà da sola!
+      next: () => {
+        // Svuotare il campo di testo specifico di questo post
+        this.commentInputs[postId] = '';
+
+        // 1. Ordiniamo il ricaricamento dei post dal database
         this.loadPosts();
       },
       error: (err) => {
@@ -133,7 +205,22 @@ export class DashboardComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
 
+  onDeletePost(postId: string): void {
+    if (confirm('Sei sicuro di voler eliminare questo post e tutti i suoi commenti?')) {
+      this.postService.deletePost(postId).subscribe({
+        next: () => {
+          // Ricarico la lista aggiornata da DB
+          this.loadPosts();
+        },
+        error: (err) => {
+          console.log('Errore durante l\' eliminazione del post:',err);
+          this.errorMessage = 'Impossibile eliminare il post in questo momento.';
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   onLogout(): void {

@@ -13,7 +13,23 @@ public class PostResponseDto {
     private String content;
     private LocalDateTime createdAt;
     private UUID authorId;
+    private Boolean isPrivate;
     private List<CommentResponseDto> comments;
+    private Boolean isPremium;
+
+    public Boolean getPremium() {
+        return isPremium;
+    }
+    public void setPremium(Boolean premium) {
+        isPremium = premium;
+    }
+
+    public Boolean getIsPrivate() {
+        return isPrivate;
+    }
+    public void setIsPrivate(Boolean aPrivate) {
+        isPrivate = aPrivate;
+    }
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id;  }

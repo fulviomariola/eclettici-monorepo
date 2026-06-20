@@ -54,10 +54,16 @@ public class SecurityConfig {
 
                         // Qualsiasi altra richiesta non specificata richiede l'autenticazione
                         .anyRequest().authenticated()
-                )
+                );
 
                 // 3. Attiviamo l'autenticazione HTTP Basic (ideale per i test immediati su Postman)
-                .httpBasic(Customizer.withDefaults());
+               // .httpBasic(Customizer.withDefaults());
+
+/*                        .httpBasic(Customizer.withDefaults())
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
+                )
+                .httpBasic(Customizer.withDefaults());*/
 
         return http.build();
     }
