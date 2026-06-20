@@ -41,20 +41,20 @@ public class PostService {
     }
 
     @Transactional
-    public Post updatePost(UUID postId, PostResponseDto updateDto, UUID currentUserId) {
+    public Post updatePost(UUID postId, PostResponseDto updateDto, UUID currentUserId, Role useRole) {
         // 1. Cercare  post nel DB
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new ResourceNotFoundException("Post non trovato con id: " + postId));
 
         // 2. CONTROLLO DI SICUREZZA: l'utente loggato è autore del post?
-        if(!post.getAuthor().getId().equals(currentUserId)) {
+        if(!post.getAuthor().getId().equals(currentUserId) && useRole != Role.ADMIN) {
             throw new AccessDeniedException("Non hai i permessi per modificare questo post!");
         }
 
         // 3. Aggiorno i campi consentiti
         post.setTitle(updateDto.getTitle());
         post.setContent(updateDto.getContent());
-        post.setIsPrivate(updateDto.getIsPrivate());  // Lo STORE può decidere se rendere privato oppure no un post che era pubblico
+        post.setIsPrivate(updateDto.getIsPrivate());
 
         return postRepository.save(post);
     }
@@ -93,20 +93,4 @@ public class PostService {
         // 2. Se esiste, chiediamo a Hibernate di cancellarlo fisicamente dal database.
         postRepository.deleteById(postId);
     }
-
-    @Transactional
-    public Post updatePost(UUID id, Post postDetails) {
-        // 1. Cerco post esistente. Se non c'è scatta la NoSuchElementException
-        Post existingPost = postRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Impossibile aggiornare. Post non trovato con ID: " + id));
-
-        // 2. Aggiorno i campi con i nuovi dati inviati dal client
-        existingPost.setTitle(postDetails.getTitle());
-        existingPost.setContent(postDetails.getContent());
-        existingPost.setIsPremium(postDetails.getIsPremium());
-
-        // 3. Salva modifiche nel db
-        return postRepository.save(existingPost);
-    }
-
 }

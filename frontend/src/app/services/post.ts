@@ -26,6 +26,7 @@ export interface PostResponseDto {
   authorId: string;
   isPremium: boolean;
   isPrivate: boolean;
+  authorEmail: string;
   comments: CommentResponseDto[];   // <--- lista commenti arrivata dal Backend!
 }
 
@@ -58,13 +59,9 @@ export class PostService {
     return this.http.post<PostResponseDto>(this.apiUrl, post, { withCredentials: true });
   }
 
-  updatePost(postId: string, postData: PostRequestDto, currentUserId: string): Observable<PostResponseDto> {
-    const params = new HttpParams().set('currentUserId',currentUserId);
-
-    return this.http.put<PostResponseDto>(`${this.apiUrl}/${postId}`, postData, {
-      ...this.httpOptions,
-      params: params
-    });
+  updatePost(postId: string, postData: any): Observable<PostResponseDto> {
+    // Rimuoviamo i params: i dati dell'utente viaggeranno dentro l'oggetto postData
+    return this.http.put<PostResponseDto>(`${this.apiUrl}/${postId}`, postData, this.httpOptions);
   }
 
   deletePost(postId: string): Observable<void> {

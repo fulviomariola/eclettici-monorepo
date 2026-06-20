@@ -99,17 +99,20 @@ export class DashboardComponent implements OnInit {
 
   // 3. Inviare PUT al Server
   onSaveEdit(postId: string): void {
-    if (!this.editPostData.title.trim() || !this.editPostData.content.trim()) {
-      this.errorMessage = 'Titolo e contenuto non possono essere vuoti durante la modifica.';
-      return;
-    }
+    const payload = {
+      id: postId,
+      title: this.editPostData.title,
+      content: this.editPostData.content,
+      isPrivate: this.editPostData.isPrivate || false,
+      authorId: this.currentUserId,
+      userRole: this.userRole
+    };
 
-
-    this.postService.updatePost(postId, this.editPostData, this.currentUserId).subscribe({
+    this.postService.updatePost(postId, payload).subscribe({
       next: () => {
         this.successMessage = 'Post aggiornato con successo';
-        this.editingPostId = null;  // Chiudere il form di modifica
-        this.loadPosts();   // Ricaricare bacheca aggiornata
+        this.editingPostId = null;
+        this.loadPosts();
         this.cdr.detectChanges();
 
         setTimeout(() => {

@@ -16,6 +16,9 @@ public class PostResponseDto {
     private Boolean isPrivate;
     private List<CommentResponseDto> comments;
     private Boolean isPremium;
+    private String userRole;
+    private String authorEmail;
+
 
     public Boolean getPremium() {
         return isPremium;
@@ -48,4 +51,10 @@ public class PostResponseDto {
 
     public List<CommentResponseDto> getComments() { return comments; }
     public void setComments(List<CommentResponseDto> comments) { this.comments = comments; }
+
+    public String getUserRole() {return userRole;}
+    public void setUserRole(String userRole) {this.userRole = userRole;}
+
+    public String getAuthorEmail() {return authorEmail;}
+    public void setAuthorEmail(String authorEmail) {this.authorEmail = authorEmail;}
 }

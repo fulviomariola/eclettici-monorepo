@@ -60,6 +60,7 @@ public class PostController {
         responseDto.setContent(savedPost.getContent());
         responseDto.setIsPrivate(savedPost.getIsPrivate());
         responseDto.setAuthorId(savedPost.getAuthor().getId());
+        responseDto.setAuthorEmail(savedPost.getAuthor().getEmail());
 
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
@@ -87,10 +88,26 @@ public class PostController {
     @Transactional
     public ResponseEntity<PostResponseDto> updatePost(
             @PathVariable UUID id,
-            @RequestBody PostResponseDto updateDto,
-            @RequestParam UUID currentUserId) {
-        Post updatedPost = postService.updatePost(id, updateDto, currentUserId);
-        return ResponseEntity.ok(convertToDto(updatedPost));
+            @Valid @RequestBody PostResponseDto updateDto) {
+
+        // 1. Convertiamo la stringa del ruolo che arriva da Angular nel nostro Enum Java
+        // Se il metodo si chiama in modo diverso nel tuo DTO (es. getRole()), usa quello.
+        Role roleEnum = Role.valueOf(updateDto.getUserRole());
+
+        // 2. Passiamo al servizio i 4 parametri ora richiesti:
+        // ID del post, il DTO con i dati, l'ID dell'utente corrente e l'Enum del ruolo
+        Post updatedPost = postService.updatePost(id, updateDto, updateDto.getAuthorId(), roleEnum);
+
+        // 3. Prepariamo l'oggetto di risposta per Angular
+        PostResponseDto responseDto = new PostResponseDto();
+        responseDto.setId(updatedPost.getId());
+        responseDto.setTitle(updatedPost.getTitle());
+        responseDto.setContent(updatedPost.getContent());
+        responseDto.setIsPrivate(updateDto.getIsPrivate());
+        responseDto.setAuthorId(updatedPost.getAuthor().getId());
+        responseDto.setAuthorEmail(updatedPost.getAuthor().getEmail());
+
+        return ResponseEntity.ok(responseDto);
     }
 
     @DeleteMapping("/{id}")
@@ -115,6 +132,7 @@ public class PostController {
 
         if (post.getAuthor() != null) {
             dto.setAuthorId(post.getAuthor().getId());
+            dto.setAuthorEmail(post.getAuthor().getEmail());
         }
 
         // MAPPATURA DEI COMMENTI: Trasformiamo ogni entità Comment in CommentResponseDto

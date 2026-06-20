@@ -154,7 +154,10 @@
                   }
                 </div>
 
-                <p class="text-xs text-slate-400 mb-3">Pubblicato il: {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                <p class="text-xs text-slate-400 mb-3">
+                  Scritto da: <span class="font-semibold text-slate-600">{{ post.authorEmail }}</span> • Pubblicato il: {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                </p>
+
                 <p class="text-slate-600 text-sm whitespace-pre-wrap mb-4">{{ post.content }}</p>
 
                 <div class="flex gap-2 mb-4">
