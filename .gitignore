@@ -67,6 +67,8 @@ REGISTRO_IMPLEMENTAZIONE_FUNZIONALE.md
 ### Escludo testo del lavoro svolto sia in pdf che in odt (write di LibreOffice) ###
 backend-eclettici-monorepo.pdf
 backend-eclettici-monorepo.odt
+fullstack-eclettici-monorepo.pdf
+fullstack-eclettici-monorepo.odt
 
 ### Escludo il token per git ###
 token
