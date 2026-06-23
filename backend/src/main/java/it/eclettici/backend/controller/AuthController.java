@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
+import jakarta.validation.Valid;
+
 import java.util.Map;
 
 @RestController
@@ -26,7 +28,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody UserRegistrationDto registrationDto) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserRegistrationDto registrationDto) {
         // 1. Controllo di sicurezza: verifichiamo se l'email esiste già nel DB
         if (userRepository.existsByEmail(registrationDto.getEmail())) {
             return ResponseEntity

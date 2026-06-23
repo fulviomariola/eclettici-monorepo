@@ -2,6 +2,7 @@ package it.eclettici.backend.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 public class UserRegistrationDto {
@@ -18,8 +19,13 @@ public class UserRegistrationDto {
     @Email(message = "Inserisci un indirizzo email valido")
     private String email;
 
+    //@Size(min = 8, message = "La password deve contenere almeno 8 caratteri.")
     @NotBlank(message = "La password è obbligatoria")
     @Size(min = 6, message = "La password deve contenere almeno 6 caratteri")
+    @Pattern(
+            regexp = "^(?=.*[$&%@#!*?]).*$",
+            message = "La password deve contenere almeno un carattere speciale tra: $, &, %, @, #, !, *, ?"
+    )
     private String password;
 
     @NotBlank(message = "La scelta del ruolo è obbligatoria")
