@@ -7,10 +7,11 @@ import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', component: ContactFormComponent },          // URL: http://localhost:4200/ (Home con il form contatti)
-  { path: 'register', component: RegisterComponent },    // URL: http://localhost:4200/register (Pagina di registrazione)
+  { path: 'register',
+    component: RegisterComponent },    // URL: http://localhost:4200/register (Pagina di registrazione)
   { path: 'dashboard',
     component: DashboardComponent,
-    canActivateChild: [authGuard] },
+    canActivate: [authGuard] },
   { path: 'login', component: LoginComponent },
   { path: '**', redirectTo: '' }                          // Wildcard per reindirizzare le rotte errate alla home
 ];

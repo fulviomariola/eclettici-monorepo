@@ -37,11 +37,67 @@
           <input type="email" id="email" name="email" [(ngModel)]="registrationData.email"
                  class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
         </div>
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+
+          <div class="relative rounded-md shadow-sm">
+            <input
+              [type]="hidePassword ? 'password' : 'text'"
+              [(ngModel)]="registrationData.password"
+              (input)="verificaPassword()"
+              name="password"
+              required
+              #passInput="ngModel"
+              class="block w-full rounded-md border-slate-300 pr-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              placeholder="Inserisci la password" />
+
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
+              @if (hidePassword) { 👁️ } @else { 🙈 }
+            </button>
+          </div>
+
+          <div class="mt-2 text-xs">
+            @if (passInput.touched || passInput.dirty) {
+              @if (!lunghezzaValida) {
+                <p class="text-red-600 font-medium"> ❌ La password è troppo corta. Mancano ancora {{ caratteriMancanti }} caratteri. </p>
+              } @else {
+                <p class="text-green-600 font-semibold">✓ Lunghezza minima raggiunta! </p>
+              }
+              @if (!haCarattereSpeciale) {
+                <p class="text-red-600 font-medium"> ❌ Manca un carattere speciale (es. $, &, %, @, #, !, *, ?).</p>
+              } @else {
+                <p class="text-green-600 font-semibold"> ✓ Carattere speciale inserito! </p>
+              }
+            }
+          </div>
+        </div>
 
         <div>
-          <label for="password" class="block text-sm font-medium text-slate-700">Password</label>
-          <input type="password" id="password" name="password" [(ngModel)]="registrationData.password"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          <label class="block text-sm font-medium text-slate-700 mb-1">Conferma Password</label>
+          <div class="relative rounded-md shadow-sm">
+
+            <input
+              [type]="hidePassword ? 'password' : 'text'"
+              [(ngModel)]="confermaPassword"
+              (input)="verificaPassword()"
+              name="confermaPassword"
+              required
+              class="block w-full rounded-md border-slate-300 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              placeholder="Ripeti la password" />
+          </div>
+
+          @if (secondoCampoToccato) {
+            <div class="mt-2 text-xs">
+              @if (!passwordCoincidono) {
+                <p class="text-red-600 font-medium"> ❌ Le password non corrispondono ancora.  </p>
+              } @else {
+                <p class="text-green-600 font-semibold"> ✓ Le password coincidono! </p>
+              }
+            </div>
+          }
         </div>
 
         <div>

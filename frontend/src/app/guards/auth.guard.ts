@@ -4,15 +4,12 @@ import { CanActivateFn, Router } from '@angular/router';
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
 
-  // Verifichiamo se l'email dell'utente è presente nel localStorage
   const userEmail = localStorage.getItem('user_email');
 
   if (userEmail) {
-    // Utente loggato: semaforo VERDE, può passare
     return true;
-  } {
-    // Utente NON loggato: semaforo ROSSO, lo rimbalziamo al login
-    router.navigate(['/login']);
+  } else {
+    void router.navigate(['/login']);  // operazione asincrona, ma non mi interessa aspettare il suo risultato prima di fare il return false
     return false;
   }
 };

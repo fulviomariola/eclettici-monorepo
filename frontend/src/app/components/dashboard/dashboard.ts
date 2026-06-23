@@ -138,14 +138,6 @@ export class DashboardComponent implements OnInit {
     // ORA LEGGIAMO L'ID REALE DAL LOCALSTORAGE (senza usare più il valore fisso)
     this.currentUserId = localStorage.getItem('user_id') || '';
 
-    // CODICE REALE IN PRODUZIONE:
-    // Legge l'ID univoco assegnato a quel commerciante o studente dal database
-    //this.currentUserId = localStorage.getItem('user_id') || 'e7470635-c6da-4474-941a-eb8cf9b6a072';
-
-    // Per il momento id testo fisso preso da Postman
-    // ci è utile in fase di sviluppo e/o collaudo
-    //this.currentUserId = 'e7470635-c6da-4474-941a-eb8cf9b6a072';
-
     // Controllo di sicurezza base: se non ci sono dati, rimanda al login
     if (!this.userEmail || !this.currentUserId) {
       void this.router.navigate(['/login']);

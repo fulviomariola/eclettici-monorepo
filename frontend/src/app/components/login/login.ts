@@ -20,8 +20,14 @@ export class LoginComponent {
     password: ''
   };
 
+  // Stato iniziale: password nascosta
+  hidePassword = true;
   successMessage: string | null = null;
   errorMessages: string[] = [];
+
+  togglePasswordVisibility(): void {
+    this.hidePassword = !this.hidePassword;
+  }
 
   onLogin(): void {
     this.successMessage = null;
@@ -32,9 +38,9 @@ export class LoginComponent {
         this.successMessage = risposta.messaggio;
 
         // Per il momento salviamo i dati utente nel localStorage per simulare la sessione attiva
+        localStorage.setItem('user_id', risposta.id);
         localStorage.setItem('user_email', risposta.email);
         localStorage.setItem('user_role', risposta.role); // Contiene "STUDENT" o "STORE"
-        localStorage.setItem('user_id', risposta.id);
 
         this.cdr.detectChanges();
 
@@ -43,7 +49,7 @@ export class LoginComponent {
           // Qui potremo reindirizzare l'utente alla dashboard del negozio o dello studente
           // per ora puliamo solo i messaggi
           this.successMessage = null;
-          this.router.navigate(["/dashboard"])
+          void this.router.navigate(["/dashboard"])
           //this.cdr.detectChanges();
         }, 1500);
       },

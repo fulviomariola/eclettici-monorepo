@@ -37,9 +37,27 @@
 
     <div>
       <label class="block mb-1 text-sm font-semibold text-slate-700">Password</label>
-      <input type="password" name="password" [(ngModel)]="formData.password" required
-             class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all"
-             placeholder="••••••••">
+
+      <div class="relative">
+        <input
+          [type]="hidePassword ? 'password' : 'text'"
+          name="password"
+          [(ngModel)]="formData.password"
+          required
+          class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-slate-800 bg-slate-50/50 transition-all pr-10"
+          placeholder="••••••••">
+
+        <button
+          type="button"
+          (click)="togglePasswordVisibility()"
+          class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600 cursor-pointer">
+          @if (hidePassword) {
+            👁️
+          } @else {
+            🙈
+          }
+        </button>
+      </div>
     </div>
 
     <button type="submit"
