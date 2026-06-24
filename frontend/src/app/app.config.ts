@@ -1,7 +1,7 @@
 import { ApplicationConfig, provideZonelessChangeDetection, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-
+import {provideHttpClient, withInterceptors} from '@angular/common/http';
+import { authInterceptor } from './security/auth-interceptor';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
@@ -16,6 +16,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     // 4. Abilita il motore client per le chiamate HTTP verso Java Spring Boot
-    provideHttpClient()
+    provideHttpClient(
+      withInterceptors([authInterceptor])
+    )
   ]
 };

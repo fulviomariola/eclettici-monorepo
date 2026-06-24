@@ -2,14 +2,14 @@ package it.eclettici.backend.controller;
 
 import it.eclettici.backend.entity.User;
 import it.eclettici.backend.dto.UserRegistrationDto;
+import it.eclettici.backend.dto.LoginResponseDto;
 import it.eclettici.backend.enums.Role;
 import it.eclettici.backend.repository.UserRepository;
+import it.eclettici.backend.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 
 import jakarta.validation.Valid;
 
@@ -21,10 +21,13 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;  // Aggiunta riferimento a JwtService.java
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    // Aggiornamento costruttore per iniettare, fra gli altri, JwtService
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -36,7 +39,7 @@ public class AuthController {
                     .body(Map.of("dettaglio", "Errore: l'indirizzo email è già in uso."));
         }
 
-        // 2. Creazione dell'entità User e cifratura della password con BCrypt
+        // Creazione dell'entità User e cifratura della password con BCrypt
         User newUser = new User();
         newUser.setNome(registrationDto.getNome());
         newUser.setCognome(registrationDto.getCognome());
@@ -45,17 +48,15 @@ public class AuthController {
         // Cifratura della password usando il passwordEncoder del tuo SecurityConfig
         newUser.setPassword(passwordEncoder.encode(registrationDto.getPassword()));
 
-        // 3. Mappatura del Ruolo dall'Enum
+        // Mappatura del Ruolo dall'Enum
         try {
             newUser.setRole(Role.valueOf(registrationDto.getRuolo()));
         } catch (IllegalArgumentException | NullPointerException e) {
-            // Se il ruolo non è valido o arriva vuoto, assegniamo "STUDENT" di default
             newUser.setRole(Role.STUDENT);
         }
 
-        // 4. Salvataggio effettivo su PostgreSQL
+        // Salvataggio effettivo su PostgreSQL
         userRepository.save(newUser);
-
         return ResponseEntity.ok(Map.of("messaggio", "Utente registrato con successo!"));
     }
 
@@ -65,27 +66,37 @@ public class AuthController {
         String emailInviata = loginData.get("email");
         String passwordInviata = loginData.get("password");
 
-        // 1. Cerco utente nel DB tramite email
+        // Cerco utente nel DB tramite email
         User user = userRepository.findByEmail(emailInviata)
                 .orElse(null);
 
-        // 2. Verifico se esiste utente e se password coincide nel DB
+        // Verifico se esiste utente e se password coincide nel DB
         if (user == null || !passwordEncoder.matches(passwordInviata, user.getPassword())) {
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("dettaglio", "Credenziali non valide. Controlla email e password."));
         }
 
-        // 3. Recupero ruolo reale
+        // Recupero ruolo reale
         String cleanedRole = user.getRole().name();
 
-        // 4. RESITUIRE L'ID REALE AL FRONTEND
-        return ResponseEntity.ok(Map.of(
-                "id", user.getId().toString(),  // ID dinamico che serve ad Angular!
-                "email", user.getEmail(),
-                "role", cleanedRole,
-                "messaggio", "Autenticazione eseguita con successo!"
-        ));
+        // GENERARE IL TOKEN REALE SFRUTTANDO IL JWT SERVICE
+        String tokenGenerato = jwtService.generaToken(
+                user.getEmail(),
+                cleanedRole,
+                user.getId().toString()
+        );
+
+        // RESTITUIREO IL DTO COMPLETO DI TOKEN ANZICHÉ LA MAPPA ANONIMA
+        LoginResponseDto risposta = new LoginResponseDto(
+                user.getId().toString(),
+                user.getEmail(),
+                cleanedRole,
+                "Autenticazione eeguita con successo!",
+                tokenGenerato
+        );
+
+        return ResponseEntity.ok(risposta);
     }
 }
 

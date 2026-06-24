@@ -37,6 +37,9 @@ export class LoginComponent {
       next: (risposta) => {
         this.successMessage = risposta.messaggio;
 
+        // Salvare JWT ufficiale
+        localStorage.setItem('token', risposta.token);
+
         // Per il momento salviamo i dati utente nel localStorage per simulare la sessione attiva
         localStorage.setItem('user_id', risposta.id);
         localStorage.setItem('user_email', risposta.email);
@@ -44,10 +47,8 @@ export class LoginComponent {
 
         this.cdr.detectChanges();
 
-        // Reindirizzamento immediato alla dashboard dopo 1 secondo per mostrare il banner verde
+        // Reindirizzamento immediato alla dashboard dopo 1,5 secondi per mostrare il banner verde
         setTimeout(() => {
-          // Qui potremo reindirizzare l'utente alla dashboard del negozio o dello studente
-          // per ora puliamo solo i messaggi
           this.successMessage = null;
           void this.router.navigate(["/dashboard"])
           //this.cdr.detectChanges();

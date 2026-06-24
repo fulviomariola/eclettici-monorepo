@@ -23,6 +23,7 @@ export interface LoginResponseDto {
   email: string;
   role: string;
   messaggio: string;
+  token: string;
 }
 
 @Injectable({
