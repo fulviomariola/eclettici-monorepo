@@ -60,6 +60,7 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("messaggio", "Utente registrato con successo!"));
     }
 
+
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody Map<String, String> loginData) {
         // Ricevo oggetto Authentication direttamente da Spring Security
@@ -98,12 +99,15 @@ public class AuthController {
 
         return ResponseEntity.ok(risposta);
     }
+
+    /**
+     * Endpoint leggero per verificare se un'email è già registrata
+     */
+    @GetMapping("/check-email")
+    public ResponseEntity checkEmailEsistente(@RequestParam String email) {
+        boolean esiste = userRepository.existsByEmail(email);
+        return ResponseEntity.ok(esiste);
+    }
+
 }
-
-
-
-
-
-
-
 

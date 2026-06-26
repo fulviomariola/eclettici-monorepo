@@ -1,4 +1,5 @@
-import { Component, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {AuthService, LoginDto, UserRegistrationDto} from '../../services/auth';
@@ -9,10 +10,11 @@ import {AuthService, LoginDto, UserRegistrationDto} from '../../services/auth';
   imports: [FormsModule],
   templateUrl: './login.html'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
 
   // Tipizza il form con LoginDto: ora contiene solo ed esclusivamente ciò che serve
   formData: LoginDto = {
@@ -24,6 +26,16 @@ export class LoginComponent {
   hidePassword = true;
   successMessage: string | null = null;
   errorMessages: string[] = [];
+
+  ngOnInit():void {
+    this.route.queryParams.subscribe(params => {
+      const emailRicevuta = params['email'];
+      if (emailRicevuta) {
+        this.formData.email = emailRicevuta;
+        this.cdr.detectChanges();     // Forza il rendering per mostrare subito il testo nell'input
+      }
+    });
+  }
 
   togglePasswordVisibility(): void {
     this.hidePassword = !this.hidePassword;
@@ -45,6 +57,7 @@ export class LoginComponent {
         localStorage.setItem('user_email', risposta.email);
         localStorage.setItem('user_role', risposta.role); // Contiene "STUDENT" o "STORE"
 
+        this.authService.aggiornaStatoSessione();
         this.cdr.detectChanges();
 
         // Reindirizzamento immediato alla dashboard dopo 1,5 secondi per mostrare il banner verde

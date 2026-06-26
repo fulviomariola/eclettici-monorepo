@@ -1,5 +1,6 @@
 package it.eclettici.backend.config;
 
+import it.eclettici.backend.security.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -8,14 +9,23 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JwtAuthenticationFilter jwtAutheFilter;
+
+    // Iniettare il nuovo filtro JWT
+    public SecurityConfig(JwtAuthenticationFilter jwtAutheFilter) {
+        this.jwtAutheFilter = jwtAutheFilter;
+    }
 
     /**
      * Definizione delle regole di autorizzazione per gli endpoint.
@@ -29,45 +39,44 @@ public class SecurityConfig {
                 // 2. Disabilitiamo il CSRF (necessario per le API REST stateless che usano Postman/Frontend)
                 .csrf(AbstractHttpConfigurer::disable)
 
+                // Configura la gestione della sessione come STATELESS (essenziale per JWT)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
                 // 3. Configurazione delle regole sugli URL
                 .authorizeHttpRequests(auth -> auth
-                        // --- ENDPOINT PUBBLICI ---
-                        // Chiunque può vedere i servizi e inviare un messaggio di contatto
-                        .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
-
-                        // Nuove rotte abilitate
-                        .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
-
-                        // Permettere la registrazione e il login a chiunque
+                        // --- 1. TUTTI GLI ENDPOINT PUBBLICI (permitAll) ---
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
-                        // ----------------------------------------------
+                        .requestMatchers(HttpMethod.GET, "/api/videos/pubblici").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
 
-                        // --- ENDPOINT PROTETTI (Solo ADMIN) ---
-                        // La gestione dei contatti (lettura/modifica) è riservata all'amministratore
-                        .requestMatchers("/api/contacts/**").hasRole("ADMIN")
-                        // La scrittura, modifica e cancellazione dei servizi sono riservate all'amministratore
-                        .requestMatchers(HttpMethod.POST, "/api/services").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasRole("ADMIN")
-                        .requestMatchers("/api/email/bulk-send").hasRole("ADMIN")
+                        // --- 2. ENDPOINT PROTETTI PER RUOLO ---
+                        // Video e catalogo (STORE e STUDENT)
+                        .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAuthority("STORE")
+                        .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyAuthority("STUDENT", "STORE")
 
+                        // Gestione Contatti, Servizi e invio Bulk (Solo ADMIN e STORE)
+                        .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.POST, "/api/services").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers("/api/email/bulk-send").hasAnyRole("ADMIN", "STORE")
+
+                        // --- 3. CHIUSURA DELLA CATENA (Unica e alla fine) ---
                         // Qualsiasi altra richiesta non specificata richiede l'autenticazione
                         .anyRequest().authenticated()
                 );
 
-                // 3. Attiviamo l'autenticazione HTTP Basic (ideale per i test immediati su Postman)
-               // .httpBasic(Customizer.withDefaults());
-
-/*                        .httpBasic(Customizer.withDefaults())
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS)
-                )
-                .httpBasic(Customizer.withDefaults());*/
+        // ABILITARE FILTRAGGIO REALE: esegue jwtAuthFilter prima di UsernamePasswordAuthenticationFilter
+        http.addFilterBefore(jwtAutheFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {

@@ -1,0 +1,58 @@
+<div class="bg-slate-950 text-slate-100 min-h-screen py-12 px-6">
+
+  <div class="max-w-6xl mx-auto mb-12">
+    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+      Sorgenti <span class="text-indigo-400">Enterprise</span>
+    </h1>
+    <p class="text-slate-400 text-sm md:text-base">
+      Esplora il codice sorgente dei progetti architetturali condivisi direttamente sul mio profilo GitHub.
+    </p>
+  </div>
+
+  @if (messaggioErrore) {
+    <div class="max-w-6xl mx-auto p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm mb-6">
+      {{ messaggioErrore }}
+    </div>
+  }
+
+  <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    @for (repo of listaRepo; track repo.name) {
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-6 shadow-lg hover:border-indigo-500/50 transition duration-300 flex flex-col justify-between group">
+
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <span class="text-xl">📁</span>
+            <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition">
+              {{ repo.name }}
+            </h3>
+          </div>
+
+          <p class="text-slate-400 text-xs leading-relaxed line-clamp-3 mb-4">
+            {{ repo.description || 'Nessuna descrizione fornita per questo repository.' }}
+          </p>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 flex items-center justify-between">
+          @if (repo.language) {
+            <span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-full font-medium">
+              ⚡ {{ repo.language }}
+            </span>
+          } @else {
+            <span class="text-xs text-slate-500">Documentazione</span>
+          }
+
+          <a
+            [href]="repo.html_url"
+            target="_blank"
+            class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold no-underline flex items-center space-x-1">
+            <span>Vedi Codice</span>
+            <span>→</span>
+          </a>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

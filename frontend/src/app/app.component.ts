@@ -1,10 +1,14 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './components/navbar/navbar';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet], // 2. Registra RouterOutlet qui per abilitare la navigazione dinamica
+  imports: [
+    RouterOutlet,
+    NavbarComponent
+  ],
   templateUrl: './app.component.html',
   styleUrl: './app.css'
 })

@@ -1,20 +1,24 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { AuthService, UserRegistrationDto } from '../../services/auth';
 import {readonly} from '@angular/forms/signals';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './register.html'
 })
 export class RegisterComponent {
   private authService = inject(AuthService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private emailTimeout: any;
+
+  emailDuplicata = false;
+  emailInserita = '';
 
   // DTO ufficiale per il backend
   registrationData: UserRegistrationDto = {
@@ -34,6 +38,42 @@ export class RegisterComponent {
   secondoCampoToccato: boolean = false;
   passwordCoincidono: boolean = false;
   haCarattereSpeciale: boolean = false;
+
+  // Supponiamo che tu stia usando i Reactive Forms (FormGroup)
+  // o i Template-driven forms. Ecco la funzione da attivare sull'evento dell'input:
+  verificaEmail(email: string): void {
+    // 1. Puliamo il vecchio timer se l'utente sta ancora digitando
+    if (this.emailTimeout) {
+      clearTimeout(this.emailTimeout);
+    }
+
+    // Valutazione preliminare base
+    if (!email || !email.includes('@') || !email.includes('.')) {
+      this.emailDuplicata = false;
+      return;
+    }
+
+    this.emailInserita = email;
+
+    // 2. Facciamo partire il controllo solo se l'utente si ferma per 450 millisecondi
+    this.emailTimeout = setTimeout(() => {
+      this.authService.checkEmail(email).subscribe({
+        next: (esiste) => {
+          // Se esiste è true, attiviamo il blocco visivo
+          this.emailDuplicata = esiste;
+
+          // Se l'email è duplicata, possiamo precompilare il DTO parzialmente o svuotarlo
+          if (esiste) {
+            console.log('Attenzione: Email già presente nel DB. Mostrare messaggio empatico.');
+          }
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Errore durante il controllo email', err);
+        }
+      });
+    }, 450);
+  }
 
   verificaPassword(): void {
     // 1. Controlo lunghezza password principale

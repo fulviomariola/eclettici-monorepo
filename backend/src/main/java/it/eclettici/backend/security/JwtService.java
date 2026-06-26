@@ -65,6 +65,12 @@ public class JwtService {
         return (emailEstrattta.equals(emailUtente) && !isTokenScaduto(token));
     }
 
+    // Estrae il ruolo del token (chiave "role")
+    public String estraiRuolo(String token) {
+        Claims claims = estraiTuttiIClaims(token);
+        return claims.get("role", String.class);
+    }
+
     // Funzione generica di utility per estrarre un singolo "claim" (pezzo di dato)
     private <T> T estraiClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = estraiTuttiIClaims(token);

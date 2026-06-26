@@ -1,0 +1,67 @@
+<div class="bg-slate-950 text-slate-100 min-h-screen py-12 px-6">
+
+  <div class="max-w-6xl mx-auto mb-12">
+    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight text-white mb-2">
+      Hub <span class="text-indigo-400">Videolezioni</span>
+    </h1>
+    <p class="text-slate-400 text-sm md:text-base">
+      @if (ruoloUtente === 'STUDENT' || ruoloUtente === 'STORE') {
+        Bentornato! Stai visualizzando il catalogo completo di Eclettici, inclusi i contenuti esclusivi.
+      } @else {
+        Esplora i contenuti gratuiti estratti dal canale YouTube. Accedi per sbloccare le lezioni Premium.
+      }
+    </p>
+  </div>
+
+  @if (messaggioErrore) {
+    <div class="max-w-6xl mx-auto p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-sm mb-6">
+      {{ messaggioErrore }}
+    </div>
+  }
+
+  <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+    @for (video of listaVideo; track video.id) {
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl overflow-hidden shadow-lg hover:border-slate-700 transition flex flex-col justify-between group">
+
+        <div class="relative overflow-hidden bg-slate-950 aspect-video">
+          <img
+            [src]="video.thumbnailUrl"
+            [alt]="video.titolo"
+            class="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+          />
+
+          @if (video.premium) {
+            <span class="absolute top-3 right-3 bg-amber-500 text-slate-950 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md shadow shadow-amber-500/20 border border-amber-400">
+              👑 Premium
+            </span>
+          } @else {
+            <span class="absolute top-3 right-3 bg-indigo-600/90 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md shadow">
+              Gratis
+            </span>
+          }
+        </div>
+
+        <div class="p-5 flex-grow flex flex-col justify-between">
+          <div>
+            <h3 class="text-base font-bold text-white mb-2 line-clamp-2 group-hover:text-indigo-400 transition duration-200">
+              {{ video.titolo }}
+            </h3>
+            <p class="text-slate-400 text-xs leading-relaxed line-clamp-3 mb-4">
+              {{ video.descrizione }}
+            </p>
+          </div>
+
+          <a
+            [href]="'https://youtu.be/UaJaWHgwbfk' + video.youtubeId"
+            target="_blank"
+            class="w-full block text-center bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white font-semibold py-2 px-4 rounded-lg text-xs transition-colors duration-200 no-underline border border-slate-700 hover:border-indigo-500">
+            Guarda la lezione
+          </a>
+        </div>
+
+      </div>
+    }
+
+  </div>
+</div>

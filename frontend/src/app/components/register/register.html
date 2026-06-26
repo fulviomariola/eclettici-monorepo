@@ -23,19 +23,45 @@
         <div>
           <label for="nome" class="block text-sm font-medium text-slate-700">Nome</label>
           <input type="text" id="nome" name="nome" [(ngModel)]="registrationData.nome"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
         </div>
 
         <div>
           <label for="cognome" class="block text-sm font-medium text-slate-700">Cognome</label>
           <input type="text" id="cognome" name="cognome" [(ngModel)]="registrationData.cognome"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
         </div>
 
         <div>
           <label for="email" class="block text-sm font-medium text-slate-700">Indirizzo Email</label>
-          <input type="email" id="email" name="email" [(ngModel)]="registrationData.email"
-                 class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500">
+          <input
+            type="email"
+            #emailInput
+            (input)="verificaEmail(emailInput.value)"
+            id="email"
+            name="email"
+            [(ngModel)]="registrationData.email"
+            class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500"
+            placeholder="Inserisci la tua email"
+          />
+          @if (emailDuplicata) {
+            <div class="mt-2 p-4 bg-amber-50 border border-amber-200 rounded-lg text-amber-900 animate-fade-in">
+              <p class="text-sm font-medium">
+                Risulti già iscritto alla community degli Eclettici con questa email!
+              </p>
+              <div class="mt-2">
+                <button
+                  type="button"
+                  routerLink="/login"
+                  [queryParams]="{ email: emailInserita }"
+                  class="text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold py-1.5 px-3 rounded-md transition">
+                Vai subito al login
+                </button>
+              </div>
+            </div>
+          }
+
+
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
@@ -48,7 +74,7 @@
               name="password"
               required
               #passInput="ngModel"
-              class="block w-full rounded-md border-slate-300 pr-10 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              class="block w-full rounded-md border-slate-300 pr-10 text-slate-900 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               placeholder="Inserisci la password" />
 
             <button
@@ -67,7 +93,7 @@
                 <p class="text-green-600 font-semibold">✓ Lunghezza minima raggiunta! </p>
               }
               @if (!haCarattereSpeciale) {
-                <p class="text-red-600 font-medium"> ❌ Manca un carattere speciale (es. $, &, %, @, #, !, *, ?).</p>
+                <p class="text-red-600 font-medium"> ❌ Manca un carattere speciale (es. $, &, %, &amp;, #, !, *, ?).</p>
               } @else {
                 <p class="text-green-600 font-semibold"> ✓ Carattere speciale inserito! </p>
               }
@@ -85,7 +111,7 @@
               (input)="verificaPassword()"
               name="confermaPassword"
               required
-              class="block w-full rounded-md border-slate-300 sm:text-sm focus:border-indigo-500 focus:ring-indigo-500"
+              class="block w-full rounded-md border-slate-300 sm:text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
               placeholder="Ripeti la password" />
           </div>
 
