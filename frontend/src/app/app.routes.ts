@@ -6,6 +6,8 @@ import { DashboardComponent } from './components/dashboard/dashboard';
 import { authGuard } from './guards/auth.guard';
 import { YoutubeComponent } from './components/youtube/youtube';
 import { GithubComponent } from './components/github/github';
+import {GestioneVideoComponent} from './components/gestione-video/gestione-video';
+import {VideolezioniComponent} from './components/videolezioni/videolezioni';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },          // URL: http://localhost:4200/ (Home con il form home)
@@ -14,5 +16,11 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'youtube', component: YoutubeComponent },
   { path: 'github', component: GithubComponent },
+  { path: 'gestione-video', component: GestioneVideoComponent, canActivate: [authGuard] },
+  { path: 'videolezioni',
+    component: VideolezioniComponent,
+    canActivate: [authGuard],
+    data: { roles: ['STUDENT','STORE'] }
+  },
   { path: '**', redirectTo: '' }                          // Wildcard per reindirizzare le rotte errate alla home
 ];

@@ -1,0 +1,82 @@
+<div class="min-h-screen bg-slate-950 p-6 text-white">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <div>
+      <h1 class="text-3xl font-bold tracking-tight">🔬 Catalogo <span class="text-indigo-500">Videolezioni</span></h1>
+      <p class="text-slate-400 text-sm mt-1">Seleziona un argomento dal catalogo multimediale e avvia lo studio.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+      <div class="space-y-4 max-h-[700px] overflow-y-auto pr-2">
+        @for (video of listaVideo; track video.youtubeId) {
+          <div
+            (click)="selezionaVideo(video)"
+            [class.border-indigo-500]="videoSelezionato?.youtubeId === video.youtubeId"
+            class="p-4 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500/50 transition flex items-start gap-4"
+          >
+            <img [src]="video.thumbnailUrl" class="w-24 h-14 object-cover rounded-lg bg-black" alt="Copertina">
+
+            <div class="flex-1 min-w-0">
+              <h4 class="text-white font-medium text-sm truncate">{{ video.titolo }}</h4>
+              <p class="text-slate-400 text-xs truncate mt-1">{{ video.descrizione }}</p>
+
+              <div class="mt-2">
+                @if (video.premium) {
+                  <span class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase rounded">
+                    🔒 Premium
+                  </span>
+                } @else {
+                  <span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase rounded">
+                    🍃 Gratis
+                  </span>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="lg:col-span-2">
+        @if (mostraBannerUpgrade) {
+          <div class="bg-slate-900 border border-amber-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[450px]">
+            <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center text-2xl border border-amber-500/20">
+              🔒
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-2xl font-bold text-white">Contenuto Premium Esclusivo</h3>
+              <p class="text-slate-400 text-sm max-w-md mx-auto">
+                Questa lezione fa parte del programma di specializzazione avanzato. Passa al livello <span class="text-indigo-400 font-bold">STORE</span> per sbloccare l'intera playlist e scaricare i sorgenti completi.
+              </p>
+            </div>
+            <button class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition shadow-lg shadow-orange-600/10 cursor-pointer">
+              Effettua l'Upgrade del Piano
+            </button>
+          </div>
+        } @else if (videoSelezionato) {
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+            <div class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800">
+              <iframe
+                [src]="'https://www.youtube.com/embed/' + videoSelezionato.youtubeId | safeUrl"
+                class="w-full h-full"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen
+              ></iframe>
+            </div>
+            <div class="space-y-2">
+              <h2 class="text-2xl font-bold text-white tracking-tight">{{ videoSelezionato.titolo }}</h2>
+              <hr class="border-slate-800">
+              <p class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{{ videoSelezionato.descrizione }}</p>
+            </div>
+          </div>
+        } @else {
+          <div class="border border-dashed border-slate-800 bg-slate-900/20 rounded-2xl p-8 text-center text-slate-500 text-sm min-h-[450px] flex flex-col items-center justify-center gap-2">
+            <span>📺</span>
+            <span>Seleziona una videolezione dall'elenco per avviare il riproduttore.</span>
+          </div>
+        }
+      </div>
+
+    </div>
+  </div>
+</div>

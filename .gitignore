@@ -13,6 +13,7 @@ out/
 
 # Backend (Java / Spring Boot / Maven)
 target/
+application.properties
 pom.xml.tag
 pom.xml.releaseBackup
 pom.xml.versionsBackup
@@ -71,4 +72,4 @@ fullstack-eclettici-monorepo.pdf
 fullstack-eclettici-monorepo.odt
 
 ### Escludo il token per git ###
-token
+token_API

@@ -14,4 +14,6 @@ public interface VideoRepository extends JpaRepository<Video, Long> {
 
     // Evita duplicati controllando se l'ID YouTube è già registrato
     Optional<Video> findByYoutubeId(String youtubeId);
+
+    boolean existsByYoutubeId(String youtubeId);
 }

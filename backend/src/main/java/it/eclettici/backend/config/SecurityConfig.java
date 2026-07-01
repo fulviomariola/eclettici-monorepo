@@ -49,24 +49,33 @@ public class SecurityConfig {
                         // --- 1. TUTTI GLI ENDPOINT PUBBLICI (permitAll) ---
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
+
+                        // Permetti a tutti l'accesso ai video pubblici
                         .requestMatchers(HttpMethod.GET, "/api/videos/pubblici").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
 
-                        // --- 2. ENDPOINT PROTETTI PER RUOLO ---
-                        // Video e catalogo (STORE e STUDENT)
-                        .requestMatchers(HttpMethod.POST, "/api/videos/**").hasAuthority("STORE")
+                        // --- 2. ENDPOINT PROTETTI DA AUTORIZZAZIONE (hasAuthority / hasAnyAuthority) ---
+
+                        // Corretto da hasRole a hasAuthority per allinearsi al JWT senza prefisso ROLE_
+                        .requestMatchers("/api/admin/**").hasAuthority("STORE")
+
+                        // Proteggi l'inserimento manuale sulla rotta esatta
+                        .requestMatchers(HttpMethod.POST, "/api/videos").hasAuthority("STORE")
+
+                        // Proteggi la rotta premium: Accesso consentito a STUDENT e STORE autenticati
                         .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyAuthority("STUDENT", "STORE")
 
                         // Gestione Contatti, Servizi e invio Bulk (Solo ADMIN e STORE)
-                        .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.POST, "/api/services").hasAnyRole("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "STORE")
-                        .requestMatchers("/api/email/bulk-send").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers("/api/contacts/**").hasAnyAuthority("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.POST, "/api/services").hasAnyAuthority("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyAuthority("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyAuthority("ADMIN", "STORE")
+                        .requestMatchers("/api/email/bulk-send").hasAnyAuthority("ADMIN", "STORE")
 
-                        // --- 3. CHIUSURA DELLA CATENA (Unica e alla fine) ---
+                        // --- 3. CHIUSURA DELLA CATENA ---
                         // Qualsiasi altra richiesta non specificata richiede l'autenticazione
                         .anyRequest().authenticated()
                 );
@@ -76,7 +85,6 @@ public class SecurityConfig {
 
         return http.build();
     }
-
 
     @Bean
     public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {

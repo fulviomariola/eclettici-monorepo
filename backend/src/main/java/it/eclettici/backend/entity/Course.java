@@ -1,25 +1,32 @@
 package it.eclettici.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.UUID;
 
 @Entity
-@Table(name = "courses")
+@Table(name = "courses") // Hibernate mapperà la tabella come 'courses'
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Course {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "youtube_playlist_id", unique = true, nullable = true)
+    private String youtubePlaylistId;
 
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false)
-    private String category;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
+    @Column(nullable = false)
+    private String status = "WORK_IN_PROGRESS";
+
 }

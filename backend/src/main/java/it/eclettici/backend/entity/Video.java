@@ -29,5 +29,66 @@ public class Video {
     private String thumbnailUrl;
 
     @Column(name = "is_premium", nullable = false)
-    private boolean isPremium = false;
+    private Boolean isPremium = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id", nullable = true)
+    private Course course;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getYoutubeId() {
+        return youtubeId;
+    }
+
+    public void setYoutubeId(String youtubeId) {
+        this.youtubeId = youtubeId;
+    }
+
+    public String getTitolo() {
+        return titolo;
+    }
+
+    public void setTitolo(String titolo) {
+        this.titolo = titolo;
+    }
+
+    public String getDescrizione() {
+        return descrizione;
+    }
+
+    public void setDescrizione(String descrizione) {
+        this.descrizione = descrizione;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    public Boolean getPremium() {
+        return isPremium;
+    }
+
+    public void setPremium(Boolean premium) {
+        isPremium = premium;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
 }
+
