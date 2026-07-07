@@ -1,85 +1,114 @@
 package it.eclettici.backend.controller;
 
+import it.eclettici.backend.dto.CommentRequestDto;
+import it.eclettici.backend.dto.CommentResponseDto;
 import it.eclettici.backend.entity.Comment;
 import it.eclettici.backend.entity.User;
 import it.eclettici.backend.service.CommentService;
-import it.eclettici.backend.repository.UserRepository;
 import jakarta.validation.Valid;
-import it.eclettici.backend.dto.CommentRequestDto;
-import it.eclettici.backend.dto.CommentResponseDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/posts/{postId}/comments")
+@RequestMapping("/api/comments") // 1. Rotta di base generica e pulita
+@CrossOrigin(origins = "*")
 public class CommentController {
 
     private final CommentService commentService;
-    private final UserRepository userRepository; // Iniettato per estrarre l'utente autenticato
 
-    public CommentController(CommentService commentService, UserRepository userRepository) {
+    public CommentController(CommentService commentService) {
         this.commentService = commentService;
-        this.userRepository = userRepository;
     }
 
     /**
-     * Endpoint per la creazione di un commento.
-     * Qualsiasi utente autenticato (STUDENT, STORE, ADMIN) può commentare.
+     * ================= CONTESTO VIDEOLEZIONI =================
      */
-    //@PreAuthorize("isAuthenticated()") // Garantisce che solo gli utenti loggati possano accedere
+
+    /**
+     * Recupera tutti i commenti di una specifica videolezione.
+     * URL: GET http://localhost:8082/api/comments/video/{videoId}
+     */
+    @GetMapping("/video/{videoId}")
+    public ResponseEntity<List<CommentResponseDto>> getCommentiPerVideo(@PathVariable Long videoId) {
+        List<CommentResponseDto> commenti = commentService.getCommentiPerVideo(videoId);
+        return ResponseEntity.ok(commenti);
+    }
+
+
+    /**
+     * ================= CONTESTO DASHBOARD (POST) =================
+     */
+
+    /**
+     * Recupera tutti i commenti di un determinato Post della Dashboard.
+     * URL: GET http://localhost:8082/api/comments/post/{postId}
+     */
+    @GetMapping("/post/{postId}")
+    public ResponseEntity<List<CommentResponseDto>> getCommentiPerPost(@PathVariable UUID postId) {
+        List<CommentResponseDto> commenti = commentService.getCommentiPerPost(postId);
+        return ResponseEntity.ok(commenti);
+    }
+
+
+    /**
+     * ================= AZIONI COMUNI (CREA, MODIFICA, CANCELLA) =================
+     */
+
+    /**
+     * Endpoint unico per la creazione di un commento (smistato internamente dal Service).
+     * URL: POST http://localhost:8082/api/comments
+     */
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
     public ResponseEntity<CommentResponseDto> createComment(
-            @PathVariable UUID postId,
-            @Valid @RequestBody CommentRequestDto requestDto) {
-            // @AuthenticationPrincipal UserDetails userDetails) {
+            @Valid @RequestBody CommentRequestDto requestDto,
+            Authentication authentication) {
 
-        // NUOVO CODICE FLUIDO E STATELESS:
-        Comment savedComment = commentService.createComment(postId, requestDto.getAuthorId(), requestDto.getContent());
-        // Esecuzione della logica di business sul Service passando i dati protetti
-        //Comment savedComment = commentService.createComment(postId, currentUser.getId(), requestDto.getContent());
+        // Estrazione stateless dell'utente autenticato dal JWT
+        User principale = (User) authentication.getPrincipal();
+        UUID authenticatedUserId = principale.getId();
 
-        // Mappatura pulita sul DTO di risposta
-        CommentResponseDto responseDto = new CommentResponseDto();
-        responseDto.setId(savedComment.getId());
-        responseDto.setContent(savedComment.getContent());
-        responseDto.setCreatedAt(savedComment.getCreatedAt());
-        responseDto.setPostId(savedComment.getPost().getId());
-        responseDto.setAuthorId(savedComment.getAuthor().getId());
-
+        CommentResponseDto responseDto = commentService.salvaCommento(requestDto, authenticatedUserId);
         return new ResponseEntity<>(responseDto, HttpStatus.CREATED);
     }
 
+    /**
+     * Modifica un commento esistente.
+     * URL: PUT http://localhost:8082/api/comments/{commentId}
+     */
     @PutMapping("/{commentId}")
+    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
     public ResponseEntity<CommentResponseDto> updateComment(
             @PathVariable UUID commentId,
             @Valid @RequestBody CommentRequestDto requestDto) {
 
-        // Invocare servizio per aggiornare il testo
         Comment updateComment = commentService.updateComment(commentId, requestDto.getContent());
 
-        // Mappare entità aggiornata sul DTO di risposta
         CommentResponseDto responseDto = new CommentResponseDto();
         responseDto.setId(updateComment.getId());
         responseDto.setContent(updateComment.getContent());
         responseDto.setCreatedAt(updateComment.getCreatedAt());
-        responseDto.setPostId(updateComment.getPost().getId());
+        if (updateComment.getPost() != null) responseDto.setPostId(updateComment.getPost().getId());
+        if (updateComment.getVideo() != null) responseDto.setVideoId(updateComment.getVideo().getId());
         responseDto.setAuthorId(updateComment.getAuthor().getId());
 
         return ResponseEntity.ok(responseDto);
     }
 
+    /**
+     * Elimina un commento.
+     * URL: DELETE http://localhost:8082/api/comments/{commentId}
+     */
     @DeleteMapping("/{commentId}")
+    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
     public ResponseEntity<Void> deleteComment(@PathVariable UUID commentId) {
-        // Invocheremo la logica sul service passando l'ID del commento da rimuovere
         commentService.deleteComment(commentId);
-
-        // Risposta standard REST 204 per le cancellazioni andate a buon fine
         return ResponseEntity.noContent().build();
     }
 }

@@ -28,7 +28,14 @@ public class VideoController {
     @GetMapping("/pubblici")
     public ResponseEntity<List<VideoDto>> getVideosPubblici() {
         List<VideoDto> dtos = videoService.getVideosPubblici().stream()
-                .map(v -> new VideoDto(v.getTitolo(), v.getDescrizione(), v.getYoutubeId(), v.getThumbnailUrl(), v.getPremium()))
+                .map(v -> new VideoDto(
+                        v.getId(), // Prende l'id dall'entità e lo mappa su videoId del DTO
+                        v.getTitolo(),
+                        v.getDescrizione(),
+                        v.getYoutubeId(),
+                        v.getThumbnailUrl(),
+                        v.getPremium() != null && v.getPremium() // Evita NullPointerException se il boolean è nullo nel DB
+                ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
@@ -40,7 +47,14 @@ public class VideoController {
     @PreAuthorize("hasAnyAuthority('STUDENT','STORE')")
     public ResponseEntity<List<VideoDto>> getPremiumVideos() {
         List<VideoDto> dtos = videoService.getVideosAll().stream()
-                .map(v -> new VideoDto(v.getTitolo(), v.getDescrizione(), v.getYoutubeId(), v.getThumbnailUrl(), v.getPremium()))
+                .map(v -> new VideoDto(
+                        v.getId(), // Prende l'id dall'entità e lo mappa su videoId del DTO
+                        v.getTitolo(),
+                        v.getDescrizione(),
+                        v.getYoutubeId(),
+                        v.getThumbnailUrl(),
+                        v.getPremium() != null && v.getPremium()
+                ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
@@ -49,7 +63,7 @@ public class VideoController {
      * Permette l'inserimento manuale di un singolo video
      */
     @PostMapping
-    @PreAuthorize("hasRole('STORE')") // Blinda l'inserimento solo a livello amministrativo
+    @PreAuthorize("hasRole('STORE')")
     public ResponseEntity<Video> salvaVideo(@RequestBody Video video) {
         if (video.getYoutubeId() == null || video.getTitolo() == null) {
             return ResponseEntity.badRequest().build();

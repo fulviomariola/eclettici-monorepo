@@ -11,8 +11,12 @@ public class CommentResponseDto {
     private UUID id;
     private String content;
     private LocalDateTime createdAt;
-    private UUID postId;
     private UUID authorId;
+    private String authorName;
+    private String authorRole;
+    private UUID postId;
+    private Long videoId;
+
 
     // Getter e Setter
     public UUID getId() { return id; }
@@ -27,6 +31,15 @@ public class CommentResponseDto {
     public UUID getPostId() { return postId; }
     public void setPostId(UUID postId) { this.postId = postId; }
 
+    public String getAuthorName() { return authorName; }
+    public void setAuthorName(String authorName) { this.authorName = authorName; }
+
+    public String getAuthorRole() { return authorRole; }
+    public void setAuthorRole(String authorRole) { this.authorRole = authorRole; }
+
     public UUID getAuthorId() { return authorId; }
     public void setAuthorId(UUID authorId) { this.authorId = authorId; }
+
+    public Long getVideoId() { return videoId; }
+    public void setVideoId(Long videoId) { this.videoId = videoId; }
 }

@@ -4,6 +4,7 @@ import it.eclettici.backend.entity.Comment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.UUID;
+import java.util.List;
 
 /*
  * Questa interfaccia estende JpaRepository. Esattamente come hai fatto per i post e i commenti,
@@ -15,4 +16,15 @@ import java.util.UUID;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
+    /**
+     * Recupera tutti i commenti associati a un determinato Post (Dashboard),
+     * ordinandoli dal più recente al più vecchio.
+     */
+    List<Comment> findByPostIdOrderByCreatedAtDesc(UUID postId);
+
+    /**
+     * Recupera tutti i commenti associati a una determinata Videolezione (Videolezioni),
+     * ordinandoli dal più recente al più vecchio.
+     */
+    List<Comment> findByVideoIdOrderByCreatedAtDesc(Long videoId);
 }

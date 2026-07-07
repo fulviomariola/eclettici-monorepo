@@ -1,61 +1,66 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { CommentRequestDto, CommentResponseDto } from '../models/comment';
 
-// DTO in ingresso: inviamo solo il contenuto text, l'autore lo decide il backend!
-export interface CommentRequestDto {
-  content: string;
-  authorId: string;
-}
-
-// DTO in uscita: la risposta che arriva dal DB con tutti gli ID separati
-export interface CommentResponseDto {
-  id: string;
-  content: string;
-  createdAt: string;
-  postId: string;
-  authorId: string;
-}
+// RISOLUZIONE CRITICITÀ TS1205: Esplicitiamo 'type' per la compatibilità con isolatedModules
+export type { CommentRequestDto, CommentResponseDto };
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommentService {
   private http = inject(HttpClient);
+  private apiUrl = 'http://192.168.1.30:8082/api/comments';
 
-  // Funzione per generare l'URL dinamico basato sul Post specifico
-  private getApiUrl(postId: string): string {
-    return `http://192.168.1.30:8082/api/posts/${postId}/comments`;
-  }
-
-  // Abilitiamo il passaggio dei cookie di sessione per l'autenticazione HTTP Basic
   private httpOptions = {
     withCredentials: true
   };
 
   /**
-   * Invia un nuovo commento associato a un post specifico
+   * Recupera tutti i commenti associati a una specifica videolezione.
+   * URL: GET /api/comments/video/{videoId}
    */
-  createComment(postId: string, comment: CommentRequestDto): Observable<CommentResponseDto> {
-    return this.http.post<CommentResponseDto>(this.getApiUrl(postId), comment, this.httpOptions);
+  getCommentiPerVideo(videoId: number): Observable<CommentResponseDto[]> {
+    return this.http.get<CommentResponseDto[]>(`${this.apiUrl}/video/${videoId}`, this.httpOptions);
   }
 
   /**
-   * Modifica commenti
-   * */
+   * Recupera tutti i commenti associati a un determinato Post della Dashboard.
+   * URL: GET /api/comments/post/{postId}
+   */
+  getCommentiPerPost(postId: string): Observable<CommentResponseDto[]> {
+    return this.http.get<CommentResponseDto[]>(`${this.apiUrl}/post/${postId}`, this.httpOptions);
+  }
+
+  /**
+   * Invia un nuovo commento.
+   * Gestisce sia la chiamata a 2 argomenti (Dashboard) sia quella a 1 argomento (Videolezioni).
+   */
+  createComment(postIdOrComment: string | CommentRequestDto, comment?: CommentRequestDto): Observable<CommentResponseDto> {
+    if (typeof postIdOrComment === 'string') {
+      // Caso Dashboard: mappa il postId all'interno del DTO prima di inviare al backend unico
+      const payload = { ...comment, postId: postIdOrComment };
+      return this.http.post<CommentResponseDto>(this.apiUrl, payload, this.httpOptions);
+    } else {
+      // Caso Videolezioni: invia direttamente il payload già strutturato
+      return this.http.post<CommentResponseDto>(this.apiUrl, postIdOrComment, this.httpOptions);
+    }
+  }
+
+  /**
+   * Modifica un commento esistente.
+   * Mantiene i 3 argomenti per non rompere la Dashboard, ignorando internamente il postId non più richiesto dal controller.
+   */
   updateComment(postId: string, commentId: string, comment: CommentRequestDto): Observable<CommentResponseDto> {
-    return this.http.put<CommentResponseDto>(
-      `http://192.168.1.30:8082/api/posts/${postId}/comments/${commentId}`,
-      comment,
-      this.httpOptions
-    );
+    return this.http.put<CommentResponseDto>(`${this.apiUrl}/${commentId}`, comment, this.httpOptions);
   }
 
   /**
-   * Cancellazione commenti
-   * */
-  deleteComment(postId: string,commentId: string): Observable<void> {
-    // Nota: adatta l'URL in base a come risponde il tuo endpoint Spring Boot per l'eliminazione
-    return this.http.delete<void>(`http://192.168.1.30:8082/api/posts/${postId}/comments/${commentId}`, this.httpOptions);
+   * Cancella un commento.
+   * Mantiene i 2 argomenti per non rompere la Dashboard, ignorando internamente il postId.
+   */
+  deleteComment(postId: string, commentId: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${commentId}`, this.httpOptions);
   }
 }

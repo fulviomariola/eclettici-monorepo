@@ -1,5 +1,7 @@
 package it.eclettici.backend.security;
 
+import it.eclettici.backend.entity.User;
+import it.eclettici.backend.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -15,14 +17,16 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
-
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
+    private final UserRepository userRepository; // 1. Aggiunto il repository per caricare l'utente
 
-    public JwtAuthenticationFilter(JwtService jwtService) {
+    // Aggiornato il costruttore per iniettare il UserRepository
+    public JwtAuthenticationFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -34,9 +38,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String userEmail;
 
-        // Se l'header manca o non inizia con "Bearer", passo al filterChain successivo senza autenticare
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request,response);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -45,58 +48,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             userEmail = jwtService.estraiEmail(jwt);
 
-            // Se l'email è valida e l'utente non è già autenticato nel contesto corrente
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 if (jwtService.validaToken(jwt, userEmail)) {
-                    // Estraggo il ruolo dal token
-                    String ruolo = jwtService.estraiRuolo(jwt);
 
-                    // Creo l'autorità per Spring Security
+                    // 2. Recuperiamo l'oggetto User completo dal database usando l'email
+                    User utenteCompleto = userRepository.findByEmail(userEmail)
+                            .orElseThrow(() -> new RuntimeException("Utente non trovato nel database"));
+
+                    String ruolo = jwtService.estraiRuolo(jwt);
                     List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(ruolo));
 
-                    // Costruire l'oggetto di autenticazione iniettando le autorità (ruoli) reali
+                    // 3. Passiamo l'oggetto 'utenteCompleto' (e non più solo la stringa email) come Principal
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userEmail,
+                            utenteCompleto, // <-- Ora Spring sa chi è l'utente reale e ne possiede l'UUID
                             null,
                             authorities
                     );
 
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                    // Iniettare l'utente autenticato nel contesto di Spring Security
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
         } catch (io.jsonwebtoken.ExpiredJwtException e) {
-            // --- CATTURIAMO LA SCADENZA SENZA BLOCCARE IL SERVER ---
             e.printStackTrace();
             logger.warn("Il token JWT fornito è scaduto, la richiesta proseguirà come utente anonimo: " + e.getMessage());
         } catch (Exception e) {
-            // In caso di token corrotto o alterato, evitare blocco applicazione
             e.printStackTrace();
             logger.error("Impossibile impostare l'autenticazione utente: " + e.getMessage());
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

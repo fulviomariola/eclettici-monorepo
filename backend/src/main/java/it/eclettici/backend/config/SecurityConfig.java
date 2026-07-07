@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // --- 1. TUTTI GLI ENDPOINT PUBBLICI (permitAll) ---
                         .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers("/api/progress/**").hasAnyAuthority("STUDENT", "STORE")
                         .requestMatchers("/api/posts/**").permitAll()
 
                         // Permetti a tutti l'accesso ai video pubblici
