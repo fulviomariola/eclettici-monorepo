@@ -8,7 +8,7 @@ import { VideoDto } from '../models/video';
 })
 export class VideoService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://192.168.1.30:8082/api/videos'; // Endpoint del tuo backend Spring
+  private apiUrl = 'http://localhost:8082/api/videos'; // Endpoint del tuo backend Spring
 
   /**
    * Recupera il catalogo dei video gratuiti (per utenti anonimi e STUDENT)

@@ -46,44 +46,38 @@ public class SecurityConfig {
 
                 // 3. Configurazione delle regole sugli URL
                 .authorizeHttpRequests(auth -> auth
-                        // --- 1. TUTTI GLI ENDPOINT PUBBLICI (permitAll) ---
+                        // --- 1. ENDPOINT PUBBLICI ---
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/progress/**").hasAnyAuthority("STUDENT", "STORE")
+                        .requestMatchers("/api/api/debug-auth").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
-
-                        // Permetti a tutti l'accesso ai video pubblici
                         .requestMatchers(HttpMethod.GET, "/api/videos/pubblici").permitAll()
-
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
 
-                        // --- 2. ENDPOINT PROTETTI DA AUTORIZZAZIONE (hasAuthority / hasAnyAuthority) ---
+                        // --- 2. ENDPOINT PROTETTI DAI RUOLI (hasRole / hasAnyRole) ---
+                        .requestMatchers("/api/progress/**").hasAnyRole("STUDENT", "STORE")
+                        .requestMatchers("/api/admin/**").hasRole("STORE")
 
-                        // Corretto da hasRole a hasAuthority per allinearsi al JWT senza prefisso ROLE_
-                        .requestMatchers("/api/admin/**").hasAuthority("STORE")
+                        // Protezione rotta video premium e inserimenti
+                        .requestMatchers(HttpMethod.POST, "/api/videos").hasRole("STORE")
+                        .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE")
 
-                        // Proteggi l'inserimento manuale sulla rotta esatta
-                        .requestMatchers(HttpMethod.POST, "/api/videos").hasAuthority("STORE")
+                        // Gestione Contatti, Servizi e Bulk Email
+                        .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.POST, "/api/services").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers("/api/email/bulk-send").hasAnyRole("ADMIN", "STORE")
 
-                        // Proteggi la rotta premium: Accesso consentito a STUDENT e STORE autenticati
-                        .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyAuthority("STUDENT", "STORE")
-
-                        // Gestione Contatti, Servizi e invio Bulk (Solo ADMIN e STORE)
-                        .requestMatchers("/api/contacts/**").hasAnyAuthority("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.POST, "/api/services").hasAnyAuthority("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyAuthority("ADMIN", "STORE")
-                        .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyAuthority("ADMIN", "STORE")
-                        .requestMatchers("/api/email/bulk-send").hasAnyAuthority("ADMIN", "STORE")
-
-                        // --- 3. CHIUSURA DELLA CATENA ---
-                        // Qualsiasi altra richiesta non specificata richiede l'autenticazione
+                        // --- 3. CHIUSURA CATENA ---
                         .anyRequest().authenticated()
                 );
 
         // ABILITARE FILTRAGGIO REALE: esegue jwtAuthFilter prima di UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAutheFilter, UsernamePasswordAuthenticationFilter.class);
 
+        System.out.println(corsConfigurationSource());
         return http.build();
     }
 

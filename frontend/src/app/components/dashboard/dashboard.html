@@ -1,39 +1,42 @@
-<div class="min-h-screen bg-slate-50 p-6">
-  <div class="max-w-5xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-100 p-8">
+<div class="min-h-screen bg-slate-950 p-6 text-slate-100">
+  <div class="max-w-5xl mx-auto bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-8">
 
-    <div class="flex justify-between items-center border-b border-slate-100 pb-6 mb-6">
+    <!-- HEADER -->
+    <div class="flex justify-between items-center border-b border-slate-800 pb-6 mb-6">
       <div>
-        <h1 class="text-3xl font-bold text-slate-800">Area Riservata Eclettici</h1>
-        <p class="text-slate-500 text-sm">Benvenuto nella tua console di gestione</p>
+        <h1 class="text-3xl font-bold text-white">Area Riservata Eclettici</h1>
+        <p class="text-slate-400 text-sm">Benvenuto nella tua console di gestione</p>
       </div>
       <button (click)="onLogout()"
-              class="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold rounded-lg text-sm transition-all cursor-pointer">
+              class="px-4 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 font-semibold rounded-lg text-sm transition-all cursor-pointer">
         Disconnetti
       </button>
     </div>
 
-    <div *ngIf="successMessage" class="mb-4 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-sm">
+    <!-- MESSAGGI -->
+    <div *ngIf="successMessage" class="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm">
       {{ successMessage }}
     </div>
-    <div *ngIf="errorMessage" class="mb-4 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm">
+    <div *ngIf="errorMessage" class="mb-4 p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm">
       {{ errorMessage }}
     </div>
 
+    <!-- USER INFO -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-      <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+      <div appScrollFade class="p-4bg-slate-800/50 rounded-xl border border-slate-800">
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Attivo</h3>
-        <p class="text-base font-medium text-slate-800">{{ userEmail }}</p>
+        <p class="text-base font-medium text-white">{{ userEmail }}</p>
       </div>
 
-      <div class="p-4 bg-slate-50 rounded-xl border border-slate-100">
+      <div appScrollFade class="p-4bg-slate-800/50 rounded-xl border border-slate-800">
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Ruolo Permessi</h3>
         <div>
           @if (userRole === 'ADMIN') {
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-100 mt-1">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mt-1">
               👑 Super Amministratore
             </span>
           } @else {
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100 mt-1">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-1">
               {{ userRole === 'STORE' ? 'Gestore Negozio' : 'Studente' }}
             </span>
           }
@@ -41,179 +44,204 @@
       </div>
     </div>
 
-    <hr class="border-slate-100 mb-8">
+    <hr class="border-slate-800 mb-8">
 
+    <!-- SEZIONE STORE: CREAZIONE POST -->
     @if (userRole === 'STORE') {
-      <div class="space-y-6 mb-12">
+      <div appScrollFade class="space-y-6 mb-12">
         <div class="border-l-4 border-emerald-500 pl-4">
-          <h2 class="text-xl font-bold text-slate-800">Scrivi un nuovo articolo o segnalazione</h2>
-          <p class="text-slate-500 text-sm">Condividi un post con la community o invia una richiesta privata.</p>
+          <h2 class="text-xl font-bold text-white">Scrivi un nuovo articolo o segnalazione</h2>
+          <p class="text-slate-400 text-sm">Condividi un post con la community o invia una richiesta privata.</p>
         </div>
 
-        <form (ngSubmit)="onCreatePost($event)" class="space-y-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+        <form (ngSubmit)="onCreatePost($event)" class="space-y-4 bg-slate-800/40 p-6 rounded-2xl border border-slate-800">
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Titolo del Post</label>
+            <label class="block text-sm font-semibold text-slate-300 mb-1">Titolo del Post</label>
             <input type="text" [(ngModel)]="newPostData.title" name="title" required
-                   class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                   class="w-full px-4 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-900 text-white placeholder-slate-500"
                    placeholder="Inserisci un titolo accattivante...">
           </div>
           <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Contenuto</label>
+            <label class="block text-sm font-semibold text-slate-300 mb-1">Contenuto</label>
             <textarea [(ngModel)]="newPostData.content" name="content" required rows="4"
-                      class="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white"
+                      class="w-full px-4 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-900 text-white placeholder-slate-500"
                       placeholder="Scrivi qui il corpo del tuo articolo..."></textarea>
           </div>
 
           <div class="flex items-center p-1">
             <input type="checkbox" id="isPrivate" [(ngModel)]="newPostData.isPrivate" name="isPrivate"
-                   class="w-4 height-4 text-emerald-600 border-slate-300 rounded focus:ring-emerald-500 cursor-pointer">
-            <label for="isPrivate" class="ml-2 text-sm text-slate-600 font-medium cursor-pointer select-none">
+                   class="w-4 h-4 text-emerald-600 border-slate-700 rounded focus:ring-emerald-500 bg-slate-900 cursor-pointer">
+            <label for="isPrivate" class="ml-2 text-sm text-slate-300 font-medium cursor-pointer select-none">
               🔒 Invia come segnalazione privata all'assistenza (Visibile solo a te e all'ADMIN)
             </label>
           </div>
 
           <button type="submit"
-                  class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-sm block mt-2">
+                  class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-sm block mt-2">
             Pubblica Post
           </button>
         </form>
       </div>
-    }
 
-    @else if (userRole === 'STUDENT') {
-      <div class="space-y-6 mb-12">
+      <!-- SEZIONE STUDENT: ACADEMY VIDEOLEZIONI -->
+    } @else if (userRole === 'STUDENT') {
+      <div appScrollFade class="space-y-6 mb-12">
         <div class="border-l-4 border-indigo-500 pl-4">
-          <h2 class="text-xl font-bold text-slate-800">Academy dello Studente</h2>
-          <p class="text-slate-500 text-sm">Accedi ai tuoi percorsi formativi rapidi</p>
+          <h2 class="text-xl font-bold text-white">Academy dello Studente</h2>
+          <p class="text-slate-400 text-sm">Accedi ai tuoi percorsi formativi rapidi</p>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div class="p-4 border border-slate-100 rounded-xl bg-slate-50">
-            <h4 class="font-bold text-slate-700">🎓 I Miei Corsi</h4>
-            <p class="text-xs text-slate-400 mt-1">Lezioni attive.</p>
+        @if (videosList.length === 0) {
+          <div class="p-6 text-center bg-slate-800/40 rounded-xl border border-dashed border-slate-800">
+            <p class="text-slate-400 text-sm italic">Nessuna videolezione ancora disponibile.</p>
           </div>
-          <div class="p-4 border border-slate-100 rounded-xl bg-slate-50">
-            <h4 class="font-bold text-slate-700">📚 Dispense</h4>
-            <p class="text-xs text-slate-400 mt-1">Scarica i PDF.</p>
+        } @else {
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            @for (video of videosList; track video.youtubeId) {
+              <div appScrollFade class="p-5 border border-slate-800 rounded-2xl bg-slate-800/50 flex flex-col justify-between hover:border-slate-700 transition-all">
+                <div>
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">
+                      Lezione
+                    </span>
+                    @if (video.premium) {
+                      <span class="text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                        ⭐ Premium
+                      </span>
+                    }
+                  </div>
+                  <h3 class="text-lg font-bold text-white mb-2">{{ video.titolo }}</h3>
+                  <p class="text-slate-400 text-xs mb-4 leading-relaxed">{{ video.descrizione }}</p>
+                </div>
+
+                <!-- PLAYER YOUTUBE EMBED -->
+                <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-800 mt-2">
+                  <iframe [src]="video.youtubeId | safeUrl"
+                          class="w-full h-full"
+                          frameborder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowfullscreen>
+                  </iframe>
+                </div>
+              </div>
+            }
           </div>
-          <div class="p-4 border border-slate-100 rounded-xl bg-slate-50">
-            <h4 class="font-bold text-slate-700">🏅 Attestati</h4>
-            <p class="text-xs text-slate-400 mt-1">Traguardi raggiunti.</p>
-          </div>
-        </div>
+        }
       </div>
     }
 
-    <hr class="border-slate-100 my-8">
+    <hr class="border-slate-800 my-8">
 
+    <!-- BACHECA POST -->
     <div class="space-y-6">
-      <div class="border-l-4 border-slate-700 pl-4">
-        <h2 class="text-xl font-bold text-slate-800">Bacheca della Community</h2>
-        <p class="text-slate-500 text-sm">Ultimi aggiornamenti e articoli pubblicati</p>
+      <div class="border-l-4 border-slate-500 pl-4">
+        <h2 class="text-xl font-bold text-white">Bacheca della Community</h2>
+        <p class="text-slate-400 text-sm">Ultimi aggiornamenti e articoli pubblicati</p>
       </div>
 
       @if (postsList.length === 0) {
-        <p class="text-slate-400 text-sm italic p-4 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+        <p class="text-slate-400 text-sm italic p-4 bg-slate-800/40 rounded-xl border border-dashed border-slate-800">
           Non ci sono ancora articoli pubblicati nella bacheca.
         </p>
       } @else {
         <div class="space-y-4">
 
           @for (post of postsList; track post.id) {
-            <div class="p-6 border border-slate-100 rounded-2xl bg-white shadow-xs hover:border-slate-200 transition-all">
+            <div appScrollFade class="p-6 border border-slate-800 rounded-2xl bg-slate-800/60 shadow-sm hover:border-slate-700 transition-all">
 
               @if (editingPostId === post.id) {
                 <div class="space-y-3">
                   <input type="text" [(ngModel)]="editPostData.title"
-                         class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white font-bold">
+                         class="w-full px-3 py-1.5 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-slate-900 text-white font-bold">
 
                   <textarea [(ngModel)]="editPostData.content" rows="3"
-                            class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-white"></textarea>
+                            class="w-full px-3 py-1.5 border border-slate-700 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 bg-slate-900 text-white"></textarea>
 
                   <div class="flex items-center gap-2 py-1">
-                    <input type="checkbox" id="isPrivate" [(ngModel)]="editPostData.isPrivate" class="cursor-pointer">
-                    <label for="editIsPrivate" class="text-xs text-slate-600 cursor-pointer select-none">🔒 Rendi questo post privato</label>
+                    <input type="checkbox" id="editIsPrivate" [(ngModel)]="editPostData.isPrivate" class="cursor-pointer bg-slate-900 border-slate-700">
+                    <label for="editIsPrivate" class="text-xs text-slate-300 cursor-pointer select-none">🔒 Rendi questo post privato</label>
                   </div>
 
                   <div class="flex gap-2">
-                    <button (click)="onSaveEdit(post.id)" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-md cursor-pointer">
+                    <button (click)="onSaveEdit(post.id)" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-md cursor-pointer">
                       Salva
                     </button>
-                    <button (click)="onCancelEdit()" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-semibold rounded-md cursor-pointer">
+                    <button (click)="onCancelEdit()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold rounded-md cursor-pointer">
                       Annulla
                     </button>
                   </div>
                 </div>
               } @else {
                 <div class="flex items-center gap-2 mb-1 flex-wrap">
-                  <h3 class="text-lg font-bold text-slate-800">{{ post.title }}</h3>
+                  <h3 class="text-lg font-bold text-white">{{ post.title }}</h3>
                   @if (post.isPrivate) {
-                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         🔒 Segnalazione Privata
                     </span>
                   }
                 </div>
 
                 <p class="text-xs text-slate-400 mb-3">
-                  Scritto da: <span class="font-semibold text-slate-600">{{ post.authorEmail }}</span> • Pubblicato il: {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                  Scritto da: <span class="font-semibold text-slate-300">{{ post.authorEmail }}</span> • Pubblicato il: {{ post.createdAt | date:'dd/MM/yyyy HH:mm' }}
                 </p>
 
-                <p class="text-slate-600 text-sm whitespace-pre-wrap mb-4">{{ post.content }}</p>
+                <p class="text-slate-300 text-sm whitespace-pre-wrap mb-4">{{ post.content }}</p>
 
                 <div class="flex gap-2 mb-4">
                   @if (userRole === 'ADMIN' || currentUserId === post.authorId) {
                     <button (click)="onDeletePost(post.id)"
-                            class="px-3 py-1 bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold rounded-md transition-all cursor-pointer">
+                            class="px-3 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 text-xs font-semibold rounded-md transition-all cursor-pointer">
                       Elimina Post
                     </button>
                   }
                   @if (currentUserId === post.authorId) {
                     <button (click)="onStartEdit(post)"
-                            class="px-3 py-1 bg-amber-100 hover:bg-amber-200 text-amber-700 text-xs font-semibold rounded-md transition-all cursor-pointer">
+                            class="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 text-xs font-semibold rounded-md transition-all cursor-pointer">
                       Modifica
                     </button>
                   }
                 </div>
 
-                <div class="mt-6 pt-4 border-t border-slate-100 bg-slate-50/50 p-4 rounded-xl">
+                <!-- SEZIONE COMMENTI -->
+                <div class="mt-6 pt-4 border-t border-slate-700/60 bg-slate-900/60 p-4 rounded-xl">
                   <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Commenti</h4>
 
                   @if (post.comments && post.comments.length > 0) {
                     <div class="space-y-3 mb-4">
 
                       @for (comment of post.comments; track comment.id) {
-                        <div class="bg-white p-3 rounded-lg border border-slate-100 shadow-2xs">
+                        <div class="bg-slate-800 p-3 rounded-lg border border-slate-700/80">
 
                           @if (editingCommentId === comment.id) {
                             <div class="space-y-2">
                               <textarea [(ngModel)]="editCommentData.content" rows="2"
-                                        class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white resize-none"></textarea>
+                                        class="w-full px-3 py-1.5 border border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-slate-500 bg-slate-900 text-white resize-none"></textarea>
                               <div class="flex gap-2">
                                 <button (click)="onSaveEditComment(post.id, comment.id)"
-                                        class="px-2.5 py-1 bg-slate-700 hover:bg-slate-800 text-white text-[11px] font-semibold rounded-md cursor-pointer">
+                                        class="px-2.5 py-1 bg-slate-700 hover:bg-slate-600 text-white text-[11px] font-semibold rounded-md cursor-pointer">
                                   Salva
                                 </button>
                                 <button (click)="onCancelEditComment()"
-                                        class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 text-[11px] font-semibold rounded-md cursor-pointer">
+                                        class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold rounded-md cursor-pointer">
                                   Annulla
                                 </button>
                               </div>
                             </div>
                           } @else {
-                            <p class="text-slate-700 text-sm">{{ comment.content }}</p>
+                            <p class="text-slate-200 text-sm">{{ comment.content }}</p>
                             <p class="text-[10px] text-slate-400 mt-1">
                               Pubblicato il: {{ comment.createdAt | date:'dd/MM/yyyy HH:mm' }}
                             </p>
-                            <div class="flex gap-2 mt-2 pt-2 border-t border-slate-50">
+                            <div class="flex gap-2 mt-2 pt-2 border-t border-slate-700/50">
                               @if (userRole === 'ADMIN' || currentUserId === comment.authorId) {
                                 <button (click)="onDeleteComment(post.id, comment.id)"
-                                        class="text-[11px] text-rose-600 hover:underline cursor-pointer">
+                                        class="text-[11px] text-rose-400 hover:underline cursor-pointer">
                                   Elimina Commento
                                 </button>
                               }
                               @if (currentUserId === comment.authorId) {
                                 <button (click)="onStartEditComment(comment)"
-                                        class="text-[11px] text-amber-600 hover:underline cursor-pointer">
+                                        class="text-[11px] text-amber-400 hover:underline cursor-pointer">
                                   Modifica
                                 </button>
                               }
@@ -230,10 +258,10 @@
                   <div class="mt-3 flex items-start gap-2">
                     <textarea [(ngModel)]="commentInputs[post.id]"
                               rows="1"
-                              class="flex-1 px-3 py-1.5 border border-slate-200 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white resize-none"
+                              class="flex-1 px-3 py-1.5 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-slate-500 bg-slate-900 placeholder-slate-500 resize-none"
                               placeholder="Scrivi un commento..."></textarea>
                     <button (click)="onAddComment(post.id)"
-                            class="px-3 py-1.5 bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold rounded-xl h-full transition-all cursor-pointer shadow-xs">
+                            class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 text-white text-xs font-semibold rounded-xl h-full transition-all cursor-pointer">
                       Invia
                     </button>
                   </div>

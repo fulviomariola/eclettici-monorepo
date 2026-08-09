@@ -8,8 +8,8 @@ import { VideoDto } from '../models/video'; // Sale di un livello ed entra in mo
 })
 export class VideoService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://192.168.1.30:8082/api/videos';
-  private adminCourseUrl = 'http://192.168.1.30:8082/api/admin/courses';
+  private apiUrl = 'http://localhost:8082/api/videos';
+  private adminCourseUrl = 'http://localhost:8082/api/admin/courses';
 
   /**
    * Recupera il catalogo dei video gratuiti

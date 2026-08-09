@@ -31,7 +31,7 @@ export interface LoginResponseDto {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://192.168.1.30:8082/api/auth';
+  private apiUrl = 'http://localhost:8082/api/auth';
 
   // Il BehaviorSubject mantiene lo stato del ruolo attuale (legge dal localStorage all'avvio)
   private userRoleSubject = new BehaviorSubject<string | null>(localStorage.getItem('user_role'));

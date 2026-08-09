@@ -11,7 +11,7 @@ export type { CommentRequestDto, CommentResponseDto };
 })
 export class CommentService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://192.168.1.30:8082/api/comments';
+  private apiUrl = 'http://localhost:8082/api/comments';
 
   private httpOptions = {
     withCredentials: true

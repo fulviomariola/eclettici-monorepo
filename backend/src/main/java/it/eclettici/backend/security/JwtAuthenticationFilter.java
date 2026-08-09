@@ -56,7 +56,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .orElseThrow(() -> new RuntimeException("Utente non trovato nel database"));
 
                     String ruolo = jwtService.estraiRuolo(jwt);
-                    List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(ruolo));
+                    String authoriryName = (ruolo != null && !ruolo.startsWith("ROLE_")) ? "ROLE_" + ruolo : ruolo;
+                    List<SimpleGrantedAuthority> authorities = List.of(new SimpleGrantedAuthority("ROLE_" + utenteCompleto.getRole().name())
+                                                   );
 
                     // 3. Passiamo l'oggetto 'utenteCompleto' (e non più solo la stringa email) come Principal
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(

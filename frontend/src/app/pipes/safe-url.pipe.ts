@@ -8,7 +8,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 export class SafeUrlPipe implements PipeTransform {
   private sanitizer = inject(DomSanitizer);
 
-  transform(value: string): SafeResourceUrl {
-    return this.sanitizer.bypassSecurityTrustResourceUrl(value);
+  transform(youtubeId: string): SafeResourceUrl {
+    // Costruisce l'URL completo di embed e lo rende sicuro per Angular
+    const embedUrl = `https://www.youtube.com/embed/${youtubeId}`;
+    return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 }

@@ -35,7 +35,7 @@ export interface PostResponseDto {
 })
 export class PostService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://192.168.1.30:8082/api/posts';
+  private apiUrl = 'http://localhost:8082/api/posts';
 
   // Cookie di sessione attivi nel browser (grazie a HttpBasic e CORS configurati)
   private httpOptions = {
@@ -72,6 +72,6 @@ export class PostService {
     // Backend si aspetta un CommentRequestDto. Creiamo oggeto con campo 'content'
     const body = { content: content };
 
-    return this.http.post(`http://192.168.1.30:8082/api/post/${postId}/comments`, body, this.httpOptions);
+    return this.http.post(`http://localhost:8082/api/post/${postId}/comments`, body, this.httpOptions);
   }
 }

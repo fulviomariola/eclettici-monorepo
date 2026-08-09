@@ -44,7 +44,7 @@ public class VideoController {
      * Recupera i video premium - Accesso consentito SOLO a STUDENT o STORE autenticati
      */
     @GetMapping("/premium")
-    @PreAuthorize("hasAnyAuthority('STUDENT','STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT','STORE','ADMIN')")
     public ResponseEntity<List<VideoDto>> getPremiumVideos() {
         List<VideoDto> dtos = videoService.getVideosAll().stream()
                 .map(v -> new VideoDto(
