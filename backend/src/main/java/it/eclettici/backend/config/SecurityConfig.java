@@ -47,6 +47,7 @@ public class SecurityConfig {
                 // 3. Configurazione delle regole sugli URL
                 .authorizeHttpRequests(auth -> auth
                         // --- 1. ENDPOINT PUBBLICI ---
+                        .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/api/debug-auth").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
@@ -54,14 +55,15 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
+                        .requestMatchers("/api/comments/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
 
                         // --- 2. ENDPOINT PROTETTI DAI RUOLI (hasRole / hasAnyRole) ---
-                        .requestMatchers("/api/progress/**").hasAnyRole("STUDENT", "STORE")
-                        .requestMatchers("/api/admin/**").hasRole("STORE")
+                        .requestMatchers("/api/progress/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","STORE")
 
                         // Protezione rotta video premium e inserimenti
                         .requestMatchers(HttpMethod.POST, "/api/videos").hasRole("STORE")
-                        .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE")
+                        .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE", "ADMIN")
 
                         // Gestione Contatti, Servizi e Bulk Email
                         .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "STORE")

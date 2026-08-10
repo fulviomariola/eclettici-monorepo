@@ -65,7 +65,7 @@ public class CommentController {
      * URL: POST http://localhost:8082/api/comments
      */
     @PostMapping
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<CommentResponseDto> createComment(
             @Valid @RequestBody CommentRequestDto requestDto,
             Authentication authentication) {
@@ -83,7 +83,7 @@ public class CommentController {
      * URL: PUT http://localhost:8082/api/comments/{commentId}
      */
     @PutMapping("/{commentId}")
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<CommentResponseDto> updateComment(
             @PathVariable UUID commentId,
             @Valid @RequestBody CommentRequestDto requestDto) {
@@ -106,7 +106,7 @@ public class CommentController {
      * URL: DELETE http://localhost:8082/api/comments/{commentId}
      */
     @DeleteMapping("/{commentId}")
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<Void> deleteComment(@PathVariable UUID commentId) {
         commentService.deleteComment(commentId);
         return ResponseEntity.noContent().build();

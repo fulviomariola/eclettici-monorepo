@@ -1,0 +1,116 @@
+<div appScrollFade class="space-y-6 mb-12">
+
+  <!-- MESSAGGI -->
+  <div *ngIf="successMessage" class="p-4 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl text-sm">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-400 rounded-xl text-sm">
+    {{ errorMessage }}
+  </div>
+
+  <!-- CREAZIONE POST -->
+  <div class="border-l-4 border-emerald-500 pl-4">
+    <h2 class="text-xl font-bold text-white">Scrivi un nuovo articolo o segnalazione</h2>
+    <p class="text-slate-400 text-sm">Condividi un post con la community o invia una richiesta privata.</p>
+  </div>
+
+  <form (ngSubmit)="onCreatePost($event)" class="space-y-4 bg-slate-800/40 p-6 rounded-2xl border border-slate-800">
+    <div>
+      <label class="block text-sm font-semibold text-slate-300 mb-1">Titolo del Post</label>
+      <input type="text" [(ngModel)]="newPostData.title" name="title" required
+             class="w-full px-4 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-900 text-white placeholder-slate-500"
+             placeholder="Inserisci un titolo accattivante...">
+    </div>
+    <div>
+      <label class="block text-sm font-semibold text-slate-300 mb-1">Contenuto</label>
+      <textarea [(ngModel)]="newPostData.content" name="content" required rows="4"
+                class="w-full px-4 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-900 text-white placeholder-slate-500"
+                placeholder="Scrivi qui il corpo del tuo articolo..."></textarea>
+    </div>
+
+    <div class="flex items-center p-1">
+      <input type="checkbox" id="isPrivate" [(ngModel)]="newPostData.isPrivate" name="isPrivate"
+             class="w-4 h-4 text-emerald-600 border-slate-700 rounded focus:ring-emerald-500 bg-slate-900 cursor-pointer">
+      <label for="isPrivate" class="ml-2 text-sm text-slate-300 font-medium cursor-pointer select-none">
+        🔒 Invia come segnalazione privata all'assistenza (Visibile solo a te e all'ADMIN)
+      </label>
+    </div>
+
+    <button type="submit"
+            class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-sm block mt-2">
+      Pubblica Post
+    </button>
+  </form>
+
+  <!-- PANNELLO GESTIONE VIDEO -->
+  <div class="space-y-6 pt-6">
+    <div class="border-l-4 border-amber-500 pl-4">
+      <h2 class="text-xl font-bold text-white">Gestione Videolezioni Academy</h2>
+      <p class="text-slate-400 text-sm">Carica nuovi contenuti o sincronizza un'intera playlist YouTube.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- Form Singolo Video -->
+      <form (ngSubmit)="onCreateVideo($event)" class="space-y-4 bg-slate-800/40 p-6 rounded-2xl border border-slate-800">
+        <h3 class="text-md font-bold text-amber-400 mb-2">📹 Aggiungi Singolo Video</h3>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Titolo Video</label>
+          <input type="text" [(ngModel)]="newVideoData.titolo" name="videoTitle" required
+                 class="w-full px-3 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-slate-900 text-white text-sm"
+                 placeholder="es. Introduzione a Spring Boot">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ID Video YouTube</label>
+          <input type="text" [(ngModel)]="newVideoData.youtubeId" name="youtubeId" required
+                 class="w-full px-3 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-slate-900 text-white text-sm"
+                 placeholder="es. dQw4w9WgXcQ">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Descrizione</label>
+          <textarea [(ngModel)]="newVideoData.descrizione" name="videoDesc" rows="2"
+                    class="w-full px-3 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 bg-slate-900 text-white text-sm"
+                    placeholder="Breve spiegazione del contenuto..."></textarea>
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="isPremiumVideo" [(ngModel)]="newVideoData.premium" name="isPremiumVideo"
+                 class="w-4 h-4 text-amber-600 border-slate-700 rounded focus:ring-amber-500 bg-slate-900 cursor-pointer">
+          <label for="isPremiumVideo" class="ml-2 text-xs text-slate-300 font-medium cursor-pointer select-none">
+            ⭐ Marca come contenuto Premium
+          </label>
+        </div>
+
+        <button type="submit"
+                class="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-sm">
+          Salva Video
+        </button>
+      </form>
+
+      <!-- Form Sincronizzazione Playlist -->
+      <form (ngSubmit)="onSyncPlaylist($event)" class="space-y-4 bg-slate-800/40 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+        <div>
+          <h3 class="text-md font-bold text-indigo-400 mb-2">🔄 Sincronizza Playlist YouTube</h3>
+          <p class="text-xs text-slate-400 mb-4">
+            Inserisci l'ID di una playlist pubblica di YouTube per importare automaticamente tutti i video al suo interno.
+          </p>
+
+          <label class="block text-xs font-semibold text-slate-300 mb-1">ID Playlist YouTube</label>
+          <input type="text" [(ngModel)]="playlistIdInput" name="playlistId" required
+                 class="w-full px-3 py-2 border border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-900 text-white text-sm"
+                 placeholder="es. PLMC9KNkIncKtPzgY-5rmhvjCfaxzp0xOj">
+        </div>
+
+        <button type="submit"
+                class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold rounded-xl text-sm transition-all cursor-pointer shadow-sm">
+          Avvia Sincronizzazione
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+</div>

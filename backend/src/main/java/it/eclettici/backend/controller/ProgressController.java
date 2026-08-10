@@ -14,6 +14,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/progress")
+@CrossOrigin(origins = "*")
 public class ProgressController {
 
     private final ProgressService progressService;
@@ -28,7 +29,7 @@ public class ProgressController {
      * URL: GET http://localhost:8082/api/progress/video/{videoId}
      */
     @GetMapping("/video/{videoId}")
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<?> getStatoProgressoVideo(@PathVariable Long videoId, Authentication authentication) {
         User principale = (User) authentication.getPrincipal();
         UUID userId = principale.getId();
@@ -44,7 +45,7 @@ public class ProgressController {
      * URL: POST http://localhost:8082/api/progress/video/{videoId}?completato=true
      */
     @PostMapping("/video/{videoId}")
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<?> aggiornaProgresso(
             @PathVariable Long videoId,
             @RequestParam Boolean completato,
@@ -70,7 +71,7 @@ public class ProgressController {
      * URL: GET http://localhost:8082/api/progress/percentuale
      */
     @GetMapping("/percentuale")
-    @PreAuthorize("hasAnyAuthority('STUDENT', 'STORE')")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<?> getPercentualeAvanzamento(Authentication authentication) {
         User principale = (User) authentication.getPrincipal();
         UUID userId = principale.getId();

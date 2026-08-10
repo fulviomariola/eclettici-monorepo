@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-// @PreAuthorize("hasRole('STORE')") // Blocca l'accesso a livello di classe: solo gli utenti STORE possono entrare
 @RestController
 @RequestMapping("/api/admin/courses")
 @CrossOrigin(origins = "http://localhost:4200") // <-- 1. ABILITA IL CORS PER QUESTO CONTROLLER
@@ -24,7 +23,7 @@ public class AdminCourseController {
      * URL: POST /api/admin/courses/sync?playlistId=PLFv9W5SOpvJE
      */
     @PostMapping("/sync")
-    @PreAuthorize("hasRole('STORE')")
+    @PreAuthorize("hasAnyRole('ADMIN','STORE')")
     public ResponseEntity<?> syncYoutubePlaylist(@RequestParam String playlistId) {
         System.out.println("--- [CONTROLLER DEBUG 1] Ricevuta richiesta POST per playlistId: " + playlistId);
         try {

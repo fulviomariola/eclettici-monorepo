@@ -1,0 +1,67 @@
+<div appScrollFade class="space-y-6 mb-12">
+  <div class="border-l-4 border-indigo-500 pl-4">
+    <h2 class="text-xl font-bold text-white">Academy dello Studente</h2>
+    <p class="text-slate-400 text-sm">Accedi ai tuoi percorsi formativi rapidi</p>
+  </div>
+
+  <!-- BARRA DI PROGRESSO ACADEMY -->
+  <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl mb-8">
+    <div class="flex justify-between items-center mb-2">
+      <span class="text-sm font-semibold text-slate-300">Avanzamento Corso Academy</span>
+      <span class="text-sm font-bold text-amber-400">{{ percentualeAvanzamento }}% Completato</span>
+    </div>
+
+    <div class="w-full h-3 bg-slate-900 rounded-full overflow-hidden border border-slate-700/50">
+      <div class="h-full bg-gradient-to-r from-amber-500 to-amber-300 transition-all duration-500 ease-out"
+           [style.width.%]="percentualeAvanzamento">
+      </div>
+    </div>
+  </div>
+
+  @if (videosList.length === 0) {
+    <div class="p-6 text-center bg-slate-800/40 rounded-xl border border-dashed border-slate-800">
+      <p class="text-slate-400 text-sm italic">Nessuna videolezione ancora disponibile.</p>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      @for (video of videosList; track video.youtubeId) {
+        <div appScrollFade class="p-5 border border-slate-800 rounded-2xl bg-slate-800/50 flex flex-col justify-between hover:border-slate-700 transition-all">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-xs font-bold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">
+                Lezione
+              </span>
+              @if (video.premium) {
+                <span class="text-[11px] font-semibold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                  ⭐ Premium
+                </span>
+              }
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">{{ video.titolo }}</h3>
+            <p class="text-slate-400 text-xs mb-4 leading-relaxed">{{ video.descrizione }}</p>
+          </div>
+
+          <!-- PLAYER YOUTUBE EMBED -->
+          <div class="aspect-video w-full rounded-xl overflow-hidden bg-slate-950 border border-slate-800 mt-2">
+            <iframe [src]="video.youtubeId | safeUrl"
+                    class="w-full h-full"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+          </div>
+
+          <!-- PULSANTE COMPLETA LEZIONE -->
+          <div class="mt-4 flex justify-between items-center pt-3 border-t border-slate-700/50">
+            <button (click)="toggleVideoProgress(video.videoId)"
+                    [class]="isVideoCompleted(video.videoId)
+                      ? 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30 transition-all cursor-pointer'
+                      : 'px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-700 text-slate-300 border border-slate-600 hover:bg-slate-600 transition-all cursor-pointer'">
+              {{ isVideoCompleted(video.videoId) ? '✓ Completata' : 'Segna come completata' }}
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

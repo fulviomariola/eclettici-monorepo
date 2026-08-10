@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../config/api.config';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,8 +9,12 @@ import { VideoDto } from '../models/video'; // Sale di un livello ed entra in mo
 })
 export class VideoService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8082/api/videos';
-  private adminCourseUrl = 'http://localhost:8082/api/admin/courses';
+
+  // private apiUrl = 'http://localhost:8082/api/videos';
+  private apiUrl = `${API_BASE_URL}/videos`;
+
+  // private adminCourseUrl = 'http://localhost:8082/api/admin/courses/sync';
+  private adminCourseUrl = `${API_BASE_URL}/admin/courses/sync`;
 
   /**
    * Recupera il catalogo dei video gratuiti
