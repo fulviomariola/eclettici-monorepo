@@ -1,0 +1,74 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del codice
+        uses: actions/checkout@v4
+
+      # --- 1. BUILD ANGULAR FRONTEND ---
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Build Frontend
+        run: |
+          cd frontend
+          npm ci
+          npx ng build --configuration production
+
+      # --- 2. BUILD SPRING BOOT BACKEND ---
+      - name: Setup Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Build Backend JAR
+        run: |
+          cd backend
+          mvn clean package -DskipTests
+
+      # --- 3. DEPLOY SULLA VPS ---
+      - name: Deploy su VPS via SSH
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "frontend/dist/*,backend/target/*.jar"
+          target: "/tmp/deploy"
+          strip_components: 0
+
+      - name: Aggiornamento file e riavvio servizi
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            # Ferma il backend
+            systemctl stop springboot
+
+            # Sostituisce il file JAR
+            cp /tmp/deploy/backend/target/*.jar /opt/app/app.jar
+            chown springboot:springboot /opt/app/app.jar
+            chmod 500 /opt/app/app.jar
+
+            # Aggiorna i file frontend
+            rm -rf /var/www/test.eclettici.it/html/*
+            cp -r /tmp/deploy/frontend/dist/* /var/www/test.eclettici.it/html/
+            chown -R www-data:www-data /var/www/test.eclettici.it/html
+            chmod -R 755 /var/www/test.eclettici.it/html
+
+            # Pulisce i file temporanei e riavvia
+            rm -rf /tmp/deploy
+            systemctl start springboot
