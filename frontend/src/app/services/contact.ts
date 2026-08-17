@@ -19,8 +19,8 @@ export class ContactService {
   private http = inject(HttpClient);
 
   // Endpoint del tuo backend Spring Boot
-  private apiUrl = 'http://localhost:8082/api/contacts';
-
+  // private apiUrl = 'http://localhost:8082/api/contacts';
+  private apiUrl = '/api/contacts';
   /**
    * Invia il payload JSON al controller Java
    */

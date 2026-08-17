@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import it.eclettici.backend.dto.BulkEmailRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/email")
+@CrossOrigin(origins = "*")
 public class EmailController {
 
     private final EmailService emailService;
@@ -38,6 +40,7 @@ public class EmailController {
      * Ritorna immediatamente 222 Accepted senza attendere il completamento dell'invio.
      */
     @PostMapping("/bulk-send")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> sendBulkEmail(@Valid @RequestBody BulkEmailRequestDto dto) {
 
         // Chiamata asincrona: si avvia in un thread separato

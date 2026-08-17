@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CommentRequestDto, CommentResponseDto } from '../models/comment';
+import { API_BASE_URL } from '../config/api.config';
 
 // RISOLUZIONE CRITICITÀ TS1205: Esplicitiamo 'type' per la compatibilità con isolatedModules
 export type { CommentRequestDto, CommentResponseDto };
@@ -11,7 +12,7 @@ export type { CommentRequestDto, CommentResponseDto };
 })
 export class CommentService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:8082/api/comments';
+  private apiUrl = `${API_BASE_URL}/comments`;
 
   private httpOptions = {
     withCredentials: true

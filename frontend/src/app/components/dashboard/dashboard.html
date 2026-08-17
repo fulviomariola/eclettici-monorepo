@@ -19,7 +19,6 @@
       </div>
     </div>
 
-
     <!-- USER INFO -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
       <div appScrollFade class="p-4 bg-slate-800/50 rounded-xl border border-slate-800">
@@ -45,20 +44,41 @@
 
     <hr class="border-slate-800 mb-8">
 
-    <!-- SEZIONE DINAMICA PER RUOLO -->
+    <!-- SEZIONE PER AMMINISTRAZIONE EMAIL -->
+    @if (userRole === 'ADMIN') {
+      <app-email-panel></app-email-panel>
+      <hr class="border-slate-800 my-8">
+    }
+
+    <!-- PANNELLI DI GESTIONE RUOLO (STORE / ADMIN) -->
     @if (userRole === 'STORE') {
       <app-store-panel [currentUserId]="currentUserId"
                        (postCreated)="onPostCreated()"
                        (videoCreated)="onVideoCreated()">
       </app-store-panel>
-    } @else if (userRole === 'STUDENT') {
-      <app-academy-section></app-academy-section>
+      <hr class="border-slate-800 my-8">
     } @else if (userRole === 'ADMIN') {
       <app-admin-panel [postsList]="postsList"
                        [videosList]="videosList"
                        [showOnlyPrivate]="showOnlyPrivate"
                        (filterToggled)="onFilterToggled($event)">
       </app-admin-panel>
+      <hr class="border-slate-800 my-8">
+    }
+
+    <!-- ACADEMY VIDEOLEZIONI (Visibile a STUDENT, STORE e ADMIN) -->
+    <app-academy-section></app-academy-section>
+
+    <!-- PANNELLO SERVIZI E PRODOTTI (Visibile a STORE e ADMIN) -->
+    @if (userRole === 'STORE' || userRole === 'ADMIN') {
+      <hr class="border-slate-800 my-8">
+      <app-services-panel></app-services-panel>
+
+      <hr class="border-slate-800 my-8">
+      <app-contacts-panel></app-contacts-panel>
+
+      <hr class="border-slate-800 my-8">
+      <app-products-panel></app-products-panel>
     }
 
     <hr class="border-slate-800 my-8">

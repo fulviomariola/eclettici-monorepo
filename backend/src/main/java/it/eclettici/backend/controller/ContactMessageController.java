@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import it.eclettici.backend.dto.ContactRequestDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,18 +15,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/contacts")
+@CrossOrigin(origins = "*")
 public class ContactMessageController {
 
     private final ContactMessageService contactMessageService;
 
-    // Constructor Injection del servizio
     public ContactMessageController(ContactMessageService contactMessageService) {
         this.contactMessageService = contactMessageService;
     }
 
     /**
-     * ENDPOINT PUBBLICO: Permette alle aziende di inviare una richiesta dal form di eclettici.it
-     * CORRISPONDENZA: POST http://localhost:8082/api/contacts
+     * ENDPOINT PUBBLICO: Form di contatto landing page
      */
     @PostMapping
     public ResponseEntity<ContactMessage> receiveContactMessage(@Valid @RequestBody ContactRequestDto dto) {
@@ -41,20 +41,20 @@ public class ContactMessageController {
     }
 
     /**
-     * ENDPOINT AMMINISTRATORE: Permette di leggere tutte le richieste ricevute.
-     * CORRISPONDENZA: GET http://localhost:8082/api/contacts
+     * ENDPOINT RISERVATO (STORE / ADMIN): Lettura di tutte le richieste
      */
     @GetMapping
+    @PreAuthorize("hasAnyRole('STORE', 'ADMIN')")
     public ResponseEntity<List<ContactMessage>> getAllMessages() {
         List<ContactMessage> messages = contactMessageService.getAllMessages();
         return ResponseEntity.ok(messages);
     }
 
     /**
-     * ENDPOINT AMMINISTRATORE: Permette di aggiornare lo stato di una trattativa (es. da PENDING a IN_PROGRESS)
-     * CORRISPONDENZA: PUT http://localhost:8082/api/contacts/{id}/status?status=IN_PROGRESS
+     * ENDPOINT RISERVATO (STORE / ADMIN): Aggiornamento dello stato trattativa
      */
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('STORE', 'ADMIN')")
     public ResponseEntity<ContactMessage> updateMessageStatus(
             @PathVariable UUID id,
             @RequestParam ContactMessageStatus status) {

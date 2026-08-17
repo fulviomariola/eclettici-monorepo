@@ -2,17 +2,20 @@ import { Component, OnInit, ViewChild, inject, ChangeDetectorRef } from '@angula
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ScrollFadeDirective } from '../../directives/scroll-fade.directive';
+import { EmailPanelComponent } from './email-panel/email-panel.component';
+import { ProductsPanelComponent } from './products-panel/products-panel.component';
 
-// IMPORT DEI NUOVI SOTTO-COMPONENTI
+// IMPORT SOTTO-COMPONENTI
 import { AcademySectionComponent } from './academy-section/academy-section.component';
 import { StorePanelComponent } from './store-panel/store-panel.component';
 import { AdminPanelComponent } from './admin-panel/admin-panel.component';
 import { CommunityBoardComponent } from './community-board/community-board.component';
+import { ServicesPanelComponent } from './services-panel/services-panel.component';
 
-// IMPORT SERVIZI PER PANNELLO ADMIN
 import { PostService, PostResponseDto } from '../../services/post';
 import { VideoService } from '../../services/video.service';
 import { VideoDto } from '../../models/video';
+import {ContactsPanelComponent} from './contacts-panel/contacts-panel.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,7 +27,11 @@ import { VideoDto } from '../../models/video';
     AcademySectionComponent,
     StorePanelComponent,
     AdminPanelComponent,
-    CommunityBoardComponent
+    CommunityBoardComponent,
+    ServicesPanelComponent,
+    ContactsPanelComponent,
+    EmailPanelComponent,
+    ProductsPanelComponent
   ],
   templateUrl: './dashboard.html'
 })

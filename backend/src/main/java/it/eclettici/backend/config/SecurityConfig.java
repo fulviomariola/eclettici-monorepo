@@ -14,6 +14,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -22,116 +27,95 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAutheFilter;
 
-    // Iniettare il nuovo filtro JWT
     public SecurityConfig(JwtAuthenticationFilter jwtAutheFilter) {
         this.jwtAutheFilter = jwtAutheFilter;
     }
 
     /**
-     * Definizione delle regole di autorizzazione per gli endpoint.
+     * Definizione delle regole di sicurezza e autorizzazione per gli endpoint.
      */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Attiviamo il CORS con la configurazione personalizzata descritta sotto
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                // 1. Attivazione CORS collegato al bean corsConfigurationSource()
+                .cors(Customizer.withDefaults())
 
-                // 2. Disabilitiamo il CSRF (necessario per le API REST stateless che usano Postman/Frontend)
+                // 2. Disabilitazione CSRF (necessario per API REST stateless con JWT)
                 .csrf(AbstractHttpConfigurer::disable)
 
-                // Configura la gestione della sessione come STATELESS (essenziale per JWT)
+                // 3. Gestione della sessione come STATELESS
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 3. Configurazione delle regole sugli URL
+                // 4. Regole sugli endpoint
                 .authorizeHttpRequests(auth -> auth
-                        // --- 1. ENDPOINT PUBBLICI ---
+                        // --- ENDPOINT PUBBLICI ---
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/api/debug-auth").permitAll()
+                        .requestMatchers("/api/debug-auth").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/videos/pubblici").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
+
+                        // --- ENDPOINT PROTETTI DA RUOLI ---
                         .requestMatchers("/api/comments/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
-
-                        // --- 2. ENDPOINT PROTETTI DAI RUOLI (hasRole / hasAnyRole) ---
                         .requestMatchers("/api/progress/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN","STORE")
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STORE")
 
-                        // Protezione rotta video premium e inserimenti
                         .requestMatchers(HttpMethod.POST, "/api/videos").hasRole("STORE")
                         .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE", "ADMIN")
 
-                        // Gestione Contatti, Servizi e Bulk Email
                         .requestMatchers("/api/contacts/**").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers(HttpMethod.POST, "/api/services").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers(HttpMethod.PUT, "/api/services/**").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers("/api/email/bulk-send").hasAnyRole("ADMIN", "STORE")
 
-                        // --- 3. CHIUSURA CATENA ---
+                        // --- TUTTE LE ALTRE ROTTE ---
                         .anyRequest().authenticated()
-                );
+                )
 
-        // ABILITARE FILTRAGGIO REALE: esegue jwtAuthFilter prima di UsernamePasswordAuthenticationFilter
-        http.addFilterBefore(jwtAutheFilter, UsernamePasswordAuthenticationFilter.class);
+                // 5. Filtro JWT prima del filtro standard di autenticazione
+                .addFilterBefore(jwtAutheFilter, UsernamePasswordAuthenticationFilter.class);
 
-        System.out.println(corsConfigurationSource());
         return http.build();
     }
 
     @Bean
-    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
-        org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
 
-        // Autorizza esplicitamente l'URL del frontend Angular
-        configuration.setAllowedOriginPatterns(java.util.List.of(
+        // Origini autorizzate: include sviluppo locale e il dominio reale su VPS
+        configuration.setAllowedOriginPatterns(List.of(
+                "https://test.eclettici.it",
+                "https://*.eclettici.it",
                 "http://localhost:4200",
+                "http://localhost:*",
                 "http://192.168.1.*:4200"
         ));
 
-        // Abilita i metodi HTTP necessari per le operazioni CRUD e pre-flight (OPTIONS)
-        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Metodi HTTP ammessi
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
-        // Consente gli header standard per il passaggio di JSON e token di autenticazione
-        configuration.setAllowedHeaders(java.util.List.of("Authorization", "Content-Type"));
+        // Header ammessi
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With", "Accept", "Origin"));
 
-        // Permette al browser di leggere l'header Authorization (utile per i futuri token JWT)
-        configuration.setExposedHeaders(java.util.List.of("Authorization"));
+        // Header esposti al frontend
+        configuration.setExposedHeaders(List.of("Authorization"));
 
-        // Consente l'invio di credenziali (cookie, HTTP Basic, ecc.) se necessario
+        // Abilita invio credenziali
         configuration.setAllowCredentials(true);
 
-        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); // Applica la regola a tutti gli endpoint
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
         return source;
     }
 
-
-    // ---------------DA COMMENTARE QUANDO SONO IN PRODUZIONE-----------------------
     @Bean
     public PasswordEncoder passwordEncoder() {
-        // Creiamo un encoder delegato che capisce i prefissi
-        String idForEncode = "bcrypt";
-        java.util.Map<String, PasswordEncoder> encoders = new java.util.HashMap<>();
-
-        encoders.put("bcrypt", new BCryptPasswordEncoder());
-        // Il NoOpPasswordEncoder serve per leggere le password in chiaro (NON USARE IN PRODUZIONE)
-        encoders.put("noop", org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance());
-
-        org.springframework.security.crypto.password.DelegatingPasswordEncoder delegatingPasswordEncoder =
-                new org.springframework.security.crypto.password.DelegatingPasswordEncoder(idForEncode, encoders);
-
-        // Questa è la riga magica: se la password nel DB non ha un prefisso (es. non inizia con {bcrypt}),
-        // usa l'encoder "noop" (in chiaro) come fallback invece di lanciare un'eccezione.
-        delegatingPasswordEncoder.setDefaultPasswordEncoderForMatches(
-                org.springframework.security.crypto.password.NoOpPasswordEncoder.getInstance()
-        );
-
-        return delegatingPasswordEncoder;
+        return new BCryptPasswordEncoder();
     }
-
 }

@@ -32,7 +32,8 @@ public class UserController {
     @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
     public ResponseEntity<?> getMyProfile(Authentication authentication) {
         User user = (User) authentication.getPrincipal();
-        UserProfileDto dto = new UserProfileDto(user.getEmail(), user.getEmail(), user.getRole().name());
+        // UserProfileDto dto = new UserProfileDto(user.getEmail(), user.getEmail(), user.getRole().name());
+        UserProfileDto dto = new UserProfileDto(user.getEmail(), user.getNome() + " " + user.getCognome(), user.getRole().name());
         return ResponseEntity.ok(dto);
     }
 
