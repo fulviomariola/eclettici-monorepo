@@ -65,7 +65,7 @@ jobs:
 
             # Aggiorna i file frontend
             rm -rf /var/www/test.eclettici.it/html/*
-            cp -r /tmp/deploy/frontend/dist/* /var/www/test.eclettici.it/html/
+            cp -r /tmp/deploy/frontend/dist/frontend/browser/*  /var/www/test.eclettici.it/html/
             chown -R www-data:www-data /var/www/test.eclettici.it/html
             chmod -R 755 /var/www/test.eclettici.it/html
 
