@@ -1,34 +1,32 @@
 <nav class="bg-slate-900 border-b border-slate-800 text-slate-100 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between shadow-md">
 
-  <!-- Intestazione: Logo + Pulsante Hamburger -->
+  <!-- Logo + Pulsante Mobile Hamburger -->
   <div class="flex items-center justify-between w-full sm:w-auto">
     <a routerLink="/" class="text-xl font-bold tracking-wider text-indigo-400 no-underline hover:text-indigo-300 transition">
       ECLETTICI
     </a>
 
-    <!-- Pulsante visibile solo su schermi piccoli -->
     <button
       (click)="isMenuAperto = !isMenuAperto"
       type="button"
       aria-label="Toggle navigation"
-      class="sm:hidden text-slate-300 hover:text-white p-2 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none">
+      class="sm:hidden text-slate-300 hover:text-white p-2 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none cursor-pointer">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         @if (!isMenuAperto) {
-          <!-- Icona Hamburger -->
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         } @else {
-          <!-- Icona X di chiusura -->
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         }
       </svg>
     </button>
   </div>
 
-  <!-- Box dei link (Collassato su mobile, esteso su desktop) -->
+  <!-- Box Link di Navigazione -->
   <div
     [class.hidden]="!isMenuAperto"
     class="flex-col sm:flex sm:flex-row items-start sm:items-center gap-y-2 sm:gap-y-0 sm:gap-x-6 text-sm font-medium w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-800">
 
+    <!-- LINK PUBBLICI SEMPRE VISIBILI -->
     <a routerLink="/"
        (click)="isMenuAperto = false"
        routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -53,18 +51,10 @@
       Videolezioni
     </a>
 
+    <!-- SEZIONE AUTENTICATA -->
     @if (currentRole$ | async; as ruolo) {
-      @if (ruolo === 'STUDENT' || ruolo === 'STORE' || ruolo === 'ADMIN') {
-        <a routerLink="/corsi"
-           (click)="isMenuAperto = false"
-           routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
-           [routerLinkActiveOptions]="{exact: true}"
-           class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
-          I Miei Corsi
-        </a>
-      }
 
-      <!-- Visibile ESCLUSIVAMENTE per ADMIN -->
+      <!-- Pannello Controllo (Visibile solo per ADMIN) -->
       @if (ruolo === 'ADMIN') {
         <a routerLink="/gestione-video"
            (click)="isMenuAperto = false"
@@ -75,37 +65,28 @@
         </a>
       }
 
-      @if (ruolo === 'STORE') {
-        <a routerLink="/admin/nuovo-video"
-           (click)="isMenuAperto = false"
-           routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
-           [routerLinkActiveOptions]="{exact: true}"
-           class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
-          Nuovo Video
-        </a>
-      }
+      <!-- Dashboard (Accessibile a tutti gli utenti loggati) -->
+      <a routerLink="/dashboard"
+         (click)="isMenuAperto = false"
+         routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
+         [routerLinkActiveOptions]="{exact: true}"
+         class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
+        Dashboard
+      </a>
 
-      @if (ruolo === 'STUDENT' || ruolo === 'STORE' || ruolo === 'ADMIN') {
-        <a routerLink="/dashboard"
-           (click)="isMenuAperto = false"
-           routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
-           [routerLinkActiveOptions]="{exact: true}"
-           class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
-          Dashboard
-        </a>
-      }
-
+      <!-- Pulsante Logout -->
       <button
         (click)="eseguiLogout()"
-        class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-3 sm:px-4 rounded-lg transition text-xs font-semibold w-full sm:w-auto mt-2 sm:mt-0 text-left sm:text-center">
+        class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 py-1.5 px-3 sm:px-4 rounded-lg transition text-xs font-semibold w-full sm:w-auto mt-2 sm:mt-0 text-left sm:text-center cursor-pointer">
         Esci
       </button>
 
     } @else {
+      <!-- Pulsante Login per utenti anonimi -->
       <a
         routerLink="/login"
         (click)="isMenuAperto = false"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 px-4 rounded-lg transition text-xs font-semibold no-underline shadow-sm w-full sm:w-auto block text-center mt-2 sm:mt-0">
+        class="bg-indigo-600 hover:bg-indigo-500 text-white py-1.5 px-4 rounded-lg transition text-xs font-semibold no-underline shadow-sm w-full sm:w-auto block text-center mt-2 sm:mt-0 cursor-pointer">
         Accedi
       </a>
     }

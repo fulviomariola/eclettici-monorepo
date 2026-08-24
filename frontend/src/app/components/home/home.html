@@ -1,5 +1,6 @@
 <div class="bg-slate-950 text-slate-100 min-h-screen">
 
+  <!-- HEADER / HERO SECTION -->
   <header class="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
     <h1 class="text-4xl md:text-6xl font-extrabold tracking-tight text-white mb-6">
       Sviluppa Competenze da <span class="text-indigo-400">Senior Developer</span>
@@ -8,12 +9,13 @@
       Benvenuto su Eclettici Piattaforma. Un ecosistema progettato per trasformare la teoria in codice enterprise.
     </p>
     <div class="flex justify-center space-x-4">
-      <a routerLink="/register" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md no-underline">
+      <a routerLink="/register" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-lg transition shadow-md no-underline cursor-pointer">
         Inizia Ora Gratuitamente
       </a>
     </div>
   </header>
 
+  <!-- SEZIONE PERCORSO DI APPRENDIMENTO -->
   <section class="max-w-4xl mx-auto px-6 py-20 border-t border-slate-900">
     <h2 class="text-3xl font-bold text-center text-white mb-16 tracking-tight">
       Il tuo percorso su <span class="text-indigo-400">Eclettici.it</span>
@@ -30,7 +32,7 @@
           <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider block mb-2">Fase Iniziale</span>
           <h3 class="text-xl font-bold text-white mb-2">Le Fondamenta e la Teoria</h3>
           <p class="text-slate-400 text-sm leading-relaxed">
-            Accedi a contenuti structured per comprendere l'architettura del software. Nessuna perdita di tempo: impariamo subito a strutturare i dati e a comprendere i pattern di programmazione enterprise.
+            Accedi a contenuti strutturati per comprendere l'architettura del software. Nessuna perdita di tempo: impariamo subito a strutturare i dati e a comprendere i pattern di programmazione enterprise.
           </p>
         </div>
       </div>
@@ -55,13 +57,138 @@
           3
         </span>
         <div appScrollFade class="bg-slate-900/60 border border-slate-800 p-6 rounded-xl shadow-sm hover:border-slate-700 transition">
-          <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider block mb-2">Pranti al Deployment</span>
+          <span class="text-xs font-semibold text-amber-400 uppercase tracking-wider block mb-2">Pronti al Deployment</span>
           <h3 class="text-xl font-bold text-white mb-2">Ottimizzazione e Produzione</h3>
           <p class="text-slate-400 text-sm leading-relaxed">
             Prepariamo l'applicazione per il mondo reale. Dall'hardening della sicurezza alla gestione del token JWT, fino al deployment sui server di produzione, per rendere il tuo software scalabile e inattaccabile.
           </p>
         </div>
       </div>
+
+    </div>
+  </section>
+
+  <!-- SEZIONE CANALI UFFICIALI & COMMUNITY -->
+  <section class="max-w-6xl mx-auto px-6 py-20 border-t border-slate-900">
+    <div class="text-center mb-14">
+      <h2 class="text-3xl font-bold text-white tracking-tight mb-3">
+        Unisciti alla <span class="text-indigo-400">Community Ufficiale</span>
+      </h2>
+      <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
+        Rimani aggiornato su nuove videolezioni, progetti pratici, guide e approfondimenti di sviluppo software.
+      </p>
+    </div>
+
+    <!-- Griglia responsive per i 6 canali -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+      <!-- YOUTUBE -->
+      <a href="https://www.youtube.com/eclettici"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-red-500/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500 group-hover:scale-110 group-hover:bg-red-500 group-hover:text-white transition-all duration-300">
+          <!-- Logo YouTube -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-red-400 transition-colors">YouTube</h3>
+          <p class="text-xs text-slate-400">Canale &#64;eclettici</p>
+        </div>
+      </a>
+
+      <!-- LINKEDIN -->
+      <a href="https://www.linkedin.com/in/fulviomariola"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-sky-500/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-110 group-hover:bg-[#0A66C2] group-hover:text-white transition-all duration-300">
+          <!-- Logo LinkedIn -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-sky-400 transition-colors">LinkedIn</h3>
+          <p class="text-xs text-slate-400">Profilo Professionale</p>
+        </div>
+      </a>
+
+      <!-- X (EX TWITTER) -->
+      <a href="https://x.com/fulviomariola"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-slate-400/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-200 group-hover:scale-110 group-hover:bg-white group-hover:text-black transition-all duration-300">
+          <!-- Logo X -->
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-slate-200 transition-colors">X (Twitter)</h3>
+          <p class="text-xs text-slate-400">&#64;fulviomariola</p>
+        </div>
+      </a>
+
+      <!-- TELEGRAM -->
+      <a href="https://t.me/eclettici"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-cyan-500/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 group-hover:scale-110 group-hover:bg-[#229ED9] group-hover:text-white transition-all duration-300">
+          <!-- Logo Telegram -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 0 0-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-cyan-400 transition-colors">Telegram</h3>
+          <p class="text-xs text-slate-400">Canale Ufficiale</p>
+        </div>
+      </a>
+
+      <!-- WHATSAPP -->
+      <a href="https://whatsapp.com/channel/0029VaWt1wmDJ6GwD5qu991P"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-emerald-500/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 group-hover:bg-[#25D366] group-hover:text-white transition-all duration-300">
+          <!-- Logo WhatsApp -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M12.04 2c-5.52 0-10 4.48-10 10 0 1.77.46 3.49 1.33 5.01L2 22l5.15-1.35C8.65 21.49 10.31 22 12.04 22c5.52 0 10-4.48 10-10s-4.48-10-10-10zm0 18.32c-1.55 0-3.07-.42-4.4-1.21l-.32-.19-3.26.85.87-3.18-.21-.33A8.29 8.29 0 0 1 3.73 12c0-4.58 3.73-8.31 8.31-8.31 4.58 0 8.31 3.73 8.31 8.31 0 4.58-3.73 8.32-8.31 8.32zm4.56-6.22c-.25-.13-1.48-.73-1.71-.81-.23-.08-.4-.13-.57.13-.17.25-.66.81-.81.98-.15.17-.3.19-.55.06-.25-.13-1.06-.39-2.02-1.24-.75-.67-1.25-1.49-1.4-1.74-.15-.25-.02-.39.11-.51.11-.11.25-.29.38-.44.13-.15.17-.25.25-.42.08-.17.04-.32-.02-.45-.06-.13-.57-1.37-.78-1.88-.21-.5-.41-.43-.57-.43h-.49c-.17 0-.44.06-.67.32-.23.25-.88.86-.88 2.1 0 1.24.9 2.44 1.03 2.61.13.17 1.77 2.7 4.29 3.78.6.26 1.07.41 1.43.53.6.19 1.15.16 1.58.1.48-.07 1.48-.6 1.69-1.19.21-.58.21-1.08.15-1.19-.06-.11-.23-.17-.48-.29z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-emerald-400 transition-colors">WhatsApp</h3>
+          <p class="text-xs text-slate-400">Canale Notizie</p>
+        </div>
+      </a>
+
+      <!-- FACEBOOK -->
+      <a href="https://www.facebook.com/Eclettici-110403473964146"
+         target="_blank"
+         rel="noopener noreferrer"
+         appScrollFade
+         class="group p-5 bg-slate-900/60 border border-slate-800 rounded-2xl flex items-center gap-4 hover:border-blue-500/50 hover:bg-slate-800/60 transition-all duration-300 no-underline shadow-sm">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 group-hover:bg-[#1877F2] group-hover:text-white transition-all duration-300">
+          <!-- Logo Facebook -->
+          <svg class="w-6 h-6 fill-current" viewBox="0 0 24 24">
+            <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v7.005C18.343 21.128 22 16.991 22 12c0-5.523-4.477-10-10-10z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-base font-semibold text-white group-hover:text-blue-400 transition-colors">Facebook</h3>
+          <p class="text-xs text-slate-400">Pagina Ufficiale</p>
+        </div>
+      </a>
 
     </div>
   </section>

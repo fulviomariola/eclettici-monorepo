@@ -1,4 +1,3 @@
-// dashboard.ts
 import { Component, OnInit, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -15,6 +14,9 @@ import { ContactsPanelComponent } from './contacts-panel/contacts-panel.componen
 import { PostService, PostResponseDto } from '../../services/post';
 import { VideoService } from '../../services/video.service';
 import { VideoDto } from '../../models/video';
+
+// Tipo per le schede disponibili
+export type DashboardTab = 'community' | 'management' | 'store' | 'email';
 
 @Component({
   selector: 'app-dashboard',
@@ -44,6 +46,9 @@ export class DashboardComponent implements OnInit {
   currentUserId: string = '';
   userRole: string = '';
 
+  // Scheda attiva predefinita
+  activeTab: DashboardTab = 'community';
+
   postsList: PostResponseDto[] = [];
   videosList: VideoDto[] = [];
   showOnlyPrivate: boolean = false;
@@ -60,6 +65,10 @@ export class DashboardComponent implements OnInit {
     if (this.userRole === 'ADMIN') {
       this.loadAdminStats();
     }
+  }
+
+  setTab(tab: DashboardTab): void {
+    this.activeTab = tab;
   }
 
   loadAdminStats(): void {

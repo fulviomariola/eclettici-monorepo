@@ -1,15 +1,15 @@
-<div class="min-h-screen bg-slate-950 p-6 text-slate-100">
-  <div class="max-w-5xl mx-auto bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-8">
+<div class="min-h-screen bg-slate-950 p-4 sm:p-6 text-slate-100">
+  <div class="max-w-5xl mx-auto bg-slate-900 rounded-2xl shadow-xl border border-slate-800 p-6 sm:p-8">
 
     <!-- HEADER -->
-    <div class="flex justify-between items-center border-b border-slate-800 pb-6 mb-6">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 mb-6 gap-4">
       <div>
-        <h1 class="text-3xl font-bold text-white">Area Riservata Eclettici</h1>
-        <p class="text-slate-400 text-sm">Benvenuto nela tua console di gestione</p>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white">Area Riservata Eclettici</h1>
+        <p class="text-slate-400 text-sm">Console operativa e gestione account</p>
       </div>
       <div class="flex items-center gap-3">
         <a routerLink="/profile"
-           class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 font-semibold rounded-lg text-sm transition-all cursor-pointer">
+           class="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 border border-indigo-500/20 font-semibold rounded-lg text-sm transition-all cursor-pointer no-underline">
           👤 Profilo
         </a>
         <button (click)="onLogout()"
@@ -20,10 +20,10 @@
     </div>
 
     <!-- USER INFO -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
       <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800">
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Attivo</h3>
-        <p class="text-base font-medium text-white">{{ userEmail }}</p>
+        <p class="text-base font-medium text-white break-all">{{ userEmail }}</p>
       </div>
 
       <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800">
@@ -33,58 +33,99 @@
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mt-1">
               👑 Super Amministratore
             </span>
+          } @else if (userRole === 'STORE') {
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-1">
+              🏪 Gestore Negozio
+            </span>
           } @else {
             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-1">
-              {{ userRole === 'STORE' ? 'Gestore Negozio' : 'Studente' }}
+              🎓 Studente
             </span>
           }
         </div>
       </div>
     </div>
 
-    <hr class="border-slate-800 mb-8">
+    <!-- BARRA DELLE SCHEDE (Mostrata solo a ruoli amministrativi) -->
+    @if (userRole === 'ADMIN' || userRole === 'STORE') {
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-4 mb-6">
+        <button
+          (click)="setTab('community')"
+          [class]="activeTab === 'community'
+            ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-sm'
+            : 'px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all cursor-pointer'">
+          💬 Community
+        </button>
 
-    <!-- SEZIONE PER AMMINISTRAZIONE EMAIL -->
-    @if (userRole === 'ADMIN') {
+        <button
+          (click)="setTab('management')"
+          [class]="activeTab === 'management'
+            ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-sm'
+            : 'px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all cursor-pointer'">
+          ⚙️ Gestione Ruolo
+        </button>
+
+        <button
+          (click)="setTab('store')"
+          [class]="activeTab === 'store'
+            ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-sm'
+            : 'px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all cursor-pointer'">
+          📦 Servizi & Prodotti
+        </button>
+
+        @if (userRole === 'ADMIN') {
+          <button
+            (click)="setTab('email')"
+            [class]="activeTab === 'email'
+              ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-indigo-600 text-white shadow-sm'
+              : 'px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition-all cursor-pointer'">
+            ✉️ Email Panel
+          </button>
+        }
+      </div>
+    }
+
+    <!-- CONTENUTO SCHEDE -->
+
+    <!-- SCHEDA 1: Community (Predefinita per tutti) -->
+    @if (activeTab === 'community' || userRole === 'STUDENT') {
+      <app-community-board [currentUserId]="currentUserId"
+                           [userRole]="userRole"
+                           [showOnlyPrivate]="showOnlyPrivate">
+      </app-community-board>
+    }
+
+    <!-- SCHEDA 2: Gestione Ruolo (STORE / ADMIN) -->
+    @if (activeTab === 'management') {
+      @if (userRole === 'STORE') {
+        <app-store-panel [currentUserId]="currentUserId"
+                         (postCreated)="onPostCreated()"
+                         (videoCreated)="onVideoCreated()">
+        </app-store-panel>
+      } @else if (userRole === 'ADMIN') {
+        <app-admin-panel [postsList]="postsList"
+                         [videosList]="videosList"
+                         [showOnlyPrivate]="showOnlyPrivate"
+                         (filterToggled)="onFilterToggled($event)">
+        </app-admin-panel>
+      }
+    }
+
+    <!-- SCHEDA 3: Prodotti, Servizi e Contatti -->
+    @if (activeTab === 'store') {
+      <div class="space-y-8">
+        <app-services-panel></app-services-panel>
+        <hr class="border-slate-800">
+        <app-contacts-panel></app-contacts-panel>
+        <hr class="border-slate-800">
+        <app-products-panel></app-products-panel>
+      </div>
+    }
+
+    <!-- SCHEDA 4: Email Panel (Solo ADMIN) -->
+    @if (activeTab === 'email' && userRole === 'ADMIN') {
       <app-email-panel></app-email-panel>
-      <hr class="border-slate-800 my-8">
     }
-
-    <!-- PANNELLI DI GESTIONE RUOLO (STORE / ADMIN) -->
-    @if (userRole === 'STORE') {
-      <app-store-panel [currentUserId]="currentUserId"
-                       (postCreated)="onPostCreated()"
-                       (videoCreated)="onVideoCreated()">
-      </app-store-panel>
-      <hr class="border-slate-800 my-8">
-    } @else if (userRole === 'ADMIN') {
-      <app-admin-panel [postsList]="postsList"
-                       [videosList]="videosList"
-                       [showOnlyPrivate]="showOnlyPrivate"
-                       (filterToggled)="onFilterToggled($event)">
-      </app-admin-panel>
-      <hr class="border-slate-800 my-8">
-    }
-
-    <!-- PANNELLO SERVIZI E PRODOTTI (Visibile a STORE e ADMIN) -->
-    @if (userRole === 'STORE' || userRole === 'ADMIN') {
-      <hr class="border-slate-800 my-8">
-      <app-services-panel></app-services-panel>
-
-      <hr class="border-slate-800 my-8">
-      <app-contacts-panel></app-contacts-panel>
-
-      <hr class="border-slate-800 my-8">
-      <app-products-panel></app-products-panel>
-    }
-
-    <hr class="border-slate-800 my-8">
-
-    <!-- BACHECA DELLA COMMUNITY -->
-    <app-community-board [currentUserId]="currentUserId"
-                         [userRole]="userRole"
-                         [showOnlyPrivate]="showOnlyPrivate">
-    </app-community-board>
 
   </div>
 </div>
