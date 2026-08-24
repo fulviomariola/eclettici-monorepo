@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClient;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,7 +55,7 @@ public class YouTubeImportService {
         syncPlaylistMetadata(course, playlistId);
         course = courseRepository.save(course);
 
-        // 3. Sincronizza i video
+        // 3. Sincronizza i video deduplicati
         syncPlaylistVideos(course, playlistId);
 
         return course;
@@ -113,6 +115,7 @@ public class YouTubeImportService {
     private void syncPlaylistVideos(Course course, String playlistId) {
         String nextPageToken = null;
         List<Video> videosToSave = new ArrayList<>();
+        Set<String> processedVideoIds = new HashSet<>(); // Previene duplicazioni di chiavi univoche
 
         try {
             do {
@@ -131,9 +134,15 @@ public class YouTubeImportService {
                         JsonNode snippet = item.path("snippet");
                         String youtubeId = snippet.path("resourceId").path("videoId").asText();
 
-                        if (youtubeId == null || youtubeId.isBlank() || "Private video".equals(snippet.path("title").asText())) {
+                        // Salta video non validi, cancellati, privati o già inseriti nel batch
+                        if (youtubeId == null || youtubeId.isBlank()
+                                || "Private video".equals(snippet.path("title").asText())
+                                || "Deleted video".equals(snippet.path("title").asText())
+                                || processedVideoIds.contains(youtubeId)) {
                             continue;
                         }
+
+                        processedVideoIds.add(youtubeId);
 
                         Video video = videoRepository.findByYoutubeId(youtubeId)
                                 .orElseGet(() -> {
