@@ -1,130 +1,134 @@
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // 1. Fondamentale per far funzionare [(ngModel)] sulla textarea
-import { VideoService } from '../../services/video.service';
+import { FormsModule } from '@angular/forms';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { CourseService } from '../../services/course.service';
 import { VideoDto } from '../../models/video';
 import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 import { ProgressService } from '../../services/progress.service';
-import { CommentService } from '../../services/comment'; // 2. Import del nuovo servizio commenti
-import { CommentResponseDto } from '../../models/comment'; // Import del DTO di risposta
+import { CommentService } from '../../services/comment';
+import { CommentResponseDto } from '../../models/comment';
+
+export type StatoVisione = 'RIPRODUCI' | 'BLOCCO_LOGIN_GRATIS' | 'BLOCCO_PREMIUM';
 
 @Component({
   selector: 'app-videolezioni',
   templateUrl: './videolezioni.html',
   standalone: true,
-  imports: [CommonModule, SafeUrlPipe, FormsModule] // 3. Aggiunto FormsModule nell'architettura Standalone
+  imports: [CommonModule, SafeUrlPipe, FormsModule, RouterLink]
 })
 export class VideolezioniComponent implements OnInit {
-  private videoService = inject(VideoService);
+  private route = inject(ActivatedRoute);
+  private courseService = inject(CourseService);
   private progressService = inject(ProgressService);
-  private commentService = inject(CommentService); // 4. Iniezione del servizio commenti
+  private commentService = inject(CommentService);
   private cdr = inject(ChangeDetectorRef);
 
+  currentCourseId: number | null = null;
   listaVideo: VideoDto[] = [];
   videoSelezionato: VideoDto | null = null;
-  mostraBannerUpgrade: boolean = false;
-  userRole: string | null = null;
+  statoVisione: StatoVisione = 'RIPRODUCI';
 
+  userRole: string | null = null;
+  isLoggedIn: boolean = false;
   videoIsCompleted: boolean = false;
 
-  // ================= VARIABILI DI STATO FASE C =================
-  listaCommenti: CommentResponseDto[] = []; // Ospediterà i commenti del video attivo
-  nuovoCommentoTesto: string = ''; // Catturerà il testo scritto dall'utente nella textarea
+  listaCommenti: CommentResponseDto[] = [];
+  nuovoCommentoTesto: string = '';
 
   ngOnInit(): void {
+    const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+    this.isLoggedIn = !!token;
     this.userRole = localStorage.getItem('user_role');
-    this.caricaVideolezioni();
+
+    // Legge l'ID del corso dalla rotta /videolezioni/:courseId
+    this.route.paramMap.subscribe(params => {
+      const courseIdParam = params.get('courseId');
+      if (courseIdParam) {
+        this.currentCourseId = Number(courseIdParam);
+        this.caricaVideolezioniCorso(this.currentCourseId);
+      }
+    });
   }
 
-  caricaVideolezioni(): void {
-    const token = localStorage.getItem('token');
-    const dataObservable = token
-      ? this.videoService.getVideosPremium()
-      : this.videoService.getVideosPubblici();
-
-    dataObservable.subscribe({
+  caricaVideolezioniCorso(courseId: number): void {
+    this.courseService.getVideosByCourse(courseId).subscribe({
       next: (videos) => {
         this.listaVideo = videos;
+        if (this.listaVideo.length > 0) {
+          this.selezionaVideo(this.listaVideo[0]);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error("Errore nel caricamento delle videolezioni:", err);
+        console.error("Errore nel caricamento delle videolezioni del corso:", err);
       }
     });
   }
 
   selezionaVideo(video: VideoDto): void {
     this.userRole = localStorage.getItem('user_role');
+    this.videoSelezionato = video;
+    this.listaCommenti = [];
+    this.videoIsCompleted = false;
 
-    console.log('--- DEBUG SELEZIONA VIDEO ---');
-    console.log('Ruolo Utente attuale:::: ', this.userRole);
-    console.log('Il video è premium?:::: ', video.premium);
+    const indice = this.listaVideo.indexOf(video);
+    const isAnteprimaLibera = (indice === 0) && !video.premium;
+    const idEffettivo = video.videoId || (video as any).id;
 
-    if (video.premium && this.userRole !== 'STORE') {
-      this.mostraBannerUpgrade = true;
-      this.videoSelezionato = null;
+    if (video.premium) {
+      this.statoVisione = (this.userRole === 'STORE') ? 'RIPRODUCI' : 'BLOCCO_PREMIUM';
     } else {
-      this.mostraBannerUpgrade = false;
-      this.videoSelezionato = video;
+      this.statoVisione = (this.isLoggedIn || isAnteprimaLibera) ? 'RIPRODUCI' : 'BLOCCO_LOGIN_GRATIS';
+    }
 
-      // 5. Reset preventivo dell'array per non mostrare i commenti del video precedente
-      this.listaCommenti = [];
-
-      if (video.videoId) {
-        // ================= LOGICA DI RECUPERO STATO PROGRESSO (FASE B) =================
-        this.progressService.getProgressoVideo(video.videoId).subscribe({
-          next: (response) => {
-            this.videoIsCompleted = response.isCompleted;
+    if (this.statoVisione === 'RIPRODUCI' && idEffettivo) {
+      if (this.isLoggedIn) {
+        this.progressService.getProgressoVideo(idEffettivo).subscribe({
+          next: (res) => {
+            this.videoIsCompleted = res.isCompleted;
             this.cdr.detectChanges();
           },
-          error: (err) => {
-            console.error("Errore nel recupero dello stato di avanzamento:", err);
+          error: () => {
             this.videoIsCompleted = false;
             this.cdr.detectChanges();
           }
         });
-
-        // ================= NUOVA LOGICA DI RECUPERO COMMENTI (FASE C) =================
-        this.commentService.getCommentiPerVideo(video.videoId).subscribe({
-          next: (comments) => {
-            this.listaCommenti = comments; // Carichiamo i commenti arrivati dal database
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            console.error("Errore nel recupero dei commenti del video:", err);
-            this.listaCommenti = [];
-            this.cdr.detectChanges();
-          }
-        });
       }
+
+      this.commentService.getCommentiPerVideo(idEffettivo).subscribe({
+        next: (comments) => {
+          this.listaCommenti = comments;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.listaCommenti = [];
+          this.cdr.detectChanges();
+        }
+      });
     }
+
     this.cdr.detectChanges();
   }
 
   toggleCompleto(event: any): void {
-    if (!this.videoSelezionato || !this.videoSelezionato.videoId) return;
+    if (!this.isLoggedIn || !this.videoSelezionato?.videoId) return;
 
     const completato = event.target.checked;
-
     this.progressService.aggiornaProgresso(this.videoSelezionato.videoId, completato).subscribe({
-      next: (response) => {
-        this.videoIsCompleted = response.isCompleted;
+      next: (res) => {
+        this.videoIsCompleted = res.isCompleted;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.log("Errore durante il salvataggio del progresso:", err);
+        console.error("Errore durante il salvataggio del progresso:", err);
         event.target.checked = !completato;
       }
     });
   }
 
-  // ================= NUOVO METODO PER PUBBLICARE UN COMMENTO (FASE C) =================
-  /**
-   * Prende il testo dalla textarea e invia il DTO al backend.
-   */
   aggiungiCommento(): void {
-    // Validazione di sicurezza: evita l'invio se il testo è vuoto o manca il video selezionato
-    if (!this.nuovoCommentoTesto.trim() || !this.videoSelezionato || !this.videoSelezionato.videoId) {
+    if (!this.isLoggedIn || !this.nuovoCommentoTesto.trim() || !this.videoSelezionato?.videoId) {
       return;
     }
 
@@ -134,11 +138,8 @@ export class VideolezioniComponent implements OnInit {
     };
 
     this.commentService.createComment(payload).subscribe({
-      next: (commentoSalvato) => {
-        // Ottimizzazione UX: iniettiamo il commento in cima alla lista locale istantaneamente
-        this.listaCommenti.unshift(commentoSalvato);
-
-        // Resettiamo il campo di testo della textarea per pulire l'interfaccia
+      next: (nuovoCommento) => {
+        this.listaCommenti.unshift(nuovoCommento);
         this.nuovoCommentoTesto = '';
         this.cdr.detectChanges();
       },

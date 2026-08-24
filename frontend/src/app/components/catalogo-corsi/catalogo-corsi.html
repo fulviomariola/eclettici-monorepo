@@ -1,0 +1,89 @@
+<div class="min-h-screen bg-slate-950 p-6 text-white">
+  <div class="max-w-7xl mx-auto space-y-8">
+
+    <!-- INTESTAZIONE VETRINA -->
+    <div class="border-b border-slate-800 pb-6">
+      <h1 class="text-3xl font-extrabold tracking-tight">
+        Percorsi Formativi & <span class="text-indigo-400">Videolezioni</span>
+      </h1>
+      <p class="text-slate-400 text-sm mt-2">
+        Scegli una raccolta didattica, visualizza le lezioni in sequenza e tieni traccia del tuo avanzamento.
+      </p>
+    </div>
+
+    <!-- LOADER -->
+    @if (isLoading) {
+      <div class="flex justify-center py-16 text-slate-400">
+        <span class="animate-pulse text-sm">Caricamento catalogo in corso...</span>
+      </div>
+    }
+
+    <!-- GRIGLIA A CARD (STILE CAVE OF PROGRAMMING) -->
+    @if (!isLoading && listaCorsi.length > 0) {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (corso of listaCorsi; track corso.id) {
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-indigo-500/50 transition-all flex flex-col justify-between group">
+
+            <div>
+              <!-- COPERTINA CON OVERLAY BADGE -->
+              <div class="relative aspect-video bg-black overflow-hidden">
+                <img
+                  [src]="corso.thumbnailUrl || 'https://img.youtube.com/vi/cUrqAAkx5vo/hqdefault.jpg'"
+                  [alt]="corso.title"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+
+                <div class="absolute top-3 left-3 flex gap-2">
+                  @if (corso.isPremium) {
+                    <span class="px-2.5 py-1 bg-slate-950/80 backdrop-blur border border-amber-500/30 text-amber-400 text-xs font-bold uppercase rounded-md shadow">
+                      👑 Premium
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-1 bg-slate-950/80 backdrop-blur border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase rounded-md shadow">
+                      🆓 Gratis
+                    </span>
+                  }
+                </div>
+
+                <div class="absolute bottom-3 right-3">
+                  <span class="px-2.5 py-1 bg-slate-950/90 backdrop-blur text-slate-200 text-xs font-mono rounded-md border border-slate-800 shadow">
+                    📚 {{ corso.totalLessons }} Lezioni
+                  </span>
+                </div>
+              </div>
+
+              <!-- CONTENUTI CARD -->
+              <div class="p-5 space-y-2.5">
+                <h3 class="text-lg font-bold text-white group-hover:text-indigo-400 transition-colors line-clamp-1">
+                  {{ corso.title }}
+                </h3>
+                <p class="text-slate-400 text-xs leading-relaxed line-clamp-3">
+                  {{ corso.description }}
+                </p>
+              </div>
+            </div>
+
+            <!-- PULSANTE CTA -->
+            <div class="p-5 pt-0">
+              <a
+                [routerLink]="['/videolezioni', corso.id]"
+                class="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md no-underline cursor-pointer">
+                <span>Accedi al Corso</span>
+                <span>➜</span>
+              </a>
+            </div>
+
+          </div>
+        }
+      </div>
+    }
+
+    <!-- NESSUN CORSO DISPONIBILE -->
+    @if (!isLoading && listaCorsi.length === 0) {
+      <div class="text-center py-16 text-slate-500 border border-dashed border-slate-800 rounded-2xl">
+        Nessun percorso formativo attualmente disponibile.
+      </div>
+    }
+
+  </div>
+</div>

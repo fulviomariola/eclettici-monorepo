@@ -35,7 +35,6 @@ export interface PostResponseDto {
 })
 export class PostService {
   private http = inject(HttpClient);
-  // private apiUrl = 'http://localhost:8082/api/posts';
   private apiUrl = '/api/posts';
 
   // Cookie di sessione attivi nel browser (grazie a HttpBasic e CORS configurati)

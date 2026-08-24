@@ -8,7 +8,6 @@ import { VideoDto } from '../models/video';
 })
 export class VideoService {
   private http = inject(HttpClient);
-  // private apiUrl = 'http://localhost:8082/api/videos'; // Endpoint del tuo backend Spring
   private apiUrl = '/api/videos';
 
   /**

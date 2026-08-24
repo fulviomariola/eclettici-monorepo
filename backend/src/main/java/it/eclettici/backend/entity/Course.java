@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Entity
-@Table(name = "courses") // Hibernate mapperà la tabella come 'courses'
+@Table(name = "courses")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +25,12 @@ public class Course {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false)
-    private String status = "WORK_IN_PROGRESS";
+    @Column(name = "thumbnail_url")
+    private String thumbnailUrl;
 
+    @Column(name = "is_premium", nullable = false)
+    private Boolean isPremium = false;
+
+    @Column(nullable = false)
+    private String status = "PUBLISHED";
 }

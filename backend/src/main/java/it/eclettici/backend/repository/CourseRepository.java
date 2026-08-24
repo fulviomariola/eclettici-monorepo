@@ -7,6 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    // Questo metodo servirà per verificare se una playlist di YouTube è già stata censita nel DB
     Optional<Course> findByYoutubePlaylistId(String youtubePlaylistId);
 }

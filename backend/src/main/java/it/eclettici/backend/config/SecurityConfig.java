@@ -48,23 +48,35 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. Regole sugli endpoint
+                // 4. Regole sugli endpoint (DALLA PIÙ SPECIFICA ALLA PIÙ GENERALE)
                 .authorizeHttpRequests(auth -> auth
-                        // --- ENDPOINT PUBBLICI ---
+                        // --- 1. TUTTI GLI ENDPOINT PUBBLICI (permitAll) ---
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/debug-auth").permitAll()
                         .requestMatchers("/api/posts/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/videos/pubblici").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/services").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
 
-                        // --- ENDPOINT PROTETTI DA RUOLI ---
-                        .requestMatchers("/api/comments/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
-                        .requestMatchers("/api/progress/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STORE")
+                        // Permessi dei corsi
+                        .requestMatchers("/api/courses/**").permitAll()
 
+                        // Rotte Video e Importazione pubbliche per i test
+                        .requestMatchers("/api/admin/videos/**").permitAll() // <-- Spostato in cima!
+                        .requestMatchers("/api/videos/pubblici", "/api/videos/public").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/videos/**").permitAll()
+
+                        // Commenti pubblici in lettura (entrambe le varianti con e senza /api)
+                        .requestMatchers("/api/comments/video/**", "/comments/video/**").permitAll() // <-- Spostato in cima!
+
+                        // --- 2. ENDPOINT PROTETTI DA RUOLI ---
+                        .requestMatchers(HttpMethod.POST, "/api/comments/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
+                        .requestMatchers("/api/comments/**").hasAnyRole("STUDENT", "STORE", "ADMIN")
+                        .requestMatchers("/api/progress/**").authenticated()
+
+                        // Rotte generiche Admin / Store
+                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers(HttpMethod.POST, "/api/videos").hasRole("STORE")
                         .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE", "ADMIN")
 
@@ -74,7 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.DELETE, "/api/services/**").hasAnyRole("ADMIN", "STORE")
                         .requestMatchers("/api/email/bulk-send").hasAnyRole("ADMIN", "STORE")
 
-                        // --- TUTTE LE ALTRE ROTTE ---
+                        // --- 3. TUTTE LE ALTRE ROTTE ---
                         .anyRequest().authenticated()
                 )
 

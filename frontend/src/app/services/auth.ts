@@ -31,7 +31,6 @@ export interface LoginResponseDto {
 })
 export class AuthService {
   private http = inject(HttpClient);
-  // private apiUrl = 'http://localhost:8082/api/auth';
   private apiUrl = '/api/auth';
 
   // Il BehaviorSubject mantiene lo stato del ruolo attuale (legge dal localStorage all'avvio)

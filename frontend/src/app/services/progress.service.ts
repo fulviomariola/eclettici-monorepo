@@ -8,7 +8,8 @@ import { API_BASE_URL } from '../config/api.config';
 })
 export class ProgressService {
 
-  private apiUrl = `${API_BASE_URL}/progress`;
+ private apiUrl = `${API_BASE_URL}/progress`;
+
 
   constructor(private http: HttpClient) { }
 

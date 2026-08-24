@@ -1,8 +1,8 @@
-import { API_BASE_URL } from '../config/api.config';
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { VideoDto } from '../models/video'; // Sale di un livello ed entra in models
+import { API_BASE_URL } from '../config/api.config';
+import { VideoDto } from '../models/video';
 
 @Injectable({
   providedIn: 'root'
@@ -10,56 +10,27 @@ import { VideoDto } from '../models/video'; // Sale di un livello ed entra in mo
 export class VideoService {
   private http = inject(HttpClient);
 
-  // private apiUrl = 'http://localhost:8082/api/videos';
   private apiUrl = `${API_BASE_URL}/videos`;
-
-  // private adminCourseUrl = 'http://localhost:8082/api/admin/courses/sync';
   private adminCourseUrl = `${API_BASE_URL}/admin/courses/sync`;
 
-  /**
-   * Recupera il catalogo dei video gratuiti
-   */
   getVideosPubblici(): Observable<VideoDto[]> {
     return this.http.get<VideoDto[]>(`${this.apiUrl}/pubblici`);
   }
 
-  /**
-   * Recupera tutti i video, inclusi i premium
-   */
   getVideosPremium(): Observable<VideoDto[]> {
     return this.http.get<VideoDto[]>(`${this.apiUrl}/premium`);
   }
 
-  /**
-   * Permette allo STORE di salvare un nuovo video
-   */
   salvaVideo(video: Partial<VideoDto>): Observable<VideoDto> {
-    // L'URL punta all'endpoint base protetto da Spring Security
-    return this.http.post<VideoDto>(`${this.apiUrl}`, video);
+    return this.http.post<VideoDto>(this.apiUrl, video);
   }
 
-  /**
-   * Invia la richiesta di sincronizzazione della playlist al backend
-   */
-  syncPlaylist(playlistId: string): Observable<{ success: boolean; message: string }> {
+  syncPlaylist(playlistId: string): Observable<{ success: boolean; message: string; courseId?: number }> {
     const params = new HttpParams().set('playlistId', playlistId);
-    // Passiamo un oggetto vuoto {} come body perché l'endpoint richiede una POST
-    return this.http.post<{ success: boolean; message: string }>(`${this.adminCourseUrl}`, {}, { params });
+    return this.http.post<{ success: boolean; message: string; courseId?: number }>(
+      this.adminCourseUrl,
+      {},
+      { params }
+    );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

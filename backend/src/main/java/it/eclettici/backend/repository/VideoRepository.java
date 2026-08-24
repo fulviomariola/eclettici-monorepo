@@ -9,11 +9,16 @@ import java.util.Optional;
 @Repository
 public interface VideoRepository extends JpaRepository<Video, Long> {
 
-    // Estrae i soli video gratuiti filtrando per isPremium = false
     List<Video> findByIsPremiumFalse();
 
-    // Evita duplicati controllando se l'ID YouTube è già registrato
     Optional<Video> findByYoutubeId(String youtubeId);
 
     boolean existsByYoutubeId(String youtubeId);
+
+    // Metodi per il catalogo corsi a 2 livelli
+    List<Video> findByCourseIdOrderByIdAsc(Long courseId);
+
+    List<Video> findByCourseIdAndIsPremiumFalseOrderByIdAsc(Long courseId);
+
+    long countByCourseId(Long courseId);
 }

@@ -1,6 +1,6 @@
 import { Component, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Fondamentale per il databinding bivalente [(ngModel)]
+import { FormsModule } from '@angular/forms';
 import { VideoService } from '../../services/video.service';
 import { VideoDto } from '../../models/video';
 
@@ -21,32 +21,31 @@ export class GestioneVideoComponent {
 
   onSyncPlaylist(): void {
     if (!this.playlistIdInput.trim()) {
-      this.showFeedback('Inserisci un ID playlist valido.', true);
+      this.showFeedback('Inserisci un ID o URL playlist valido.', true);
       return;
     }
 
     this.isSubmitting = true;
     this.feedbackMessage = "Sincronizzazione in corso... Attendere.";
     this.isError = false;
+    this.cdr.detectChanges();
 
     this.videoService.syncPlaylist(this.playlistIdInput.trim()).subscribe({
       next: (response) => {
         this.isSubmitting = false;
-        this.showFeedback(response.message, false);
-        this.playlistIdInput = '';  // Svuota l'input in caso di successo
-        this.cdr.detectChanges();
-
+        this.showFeedback(response.message || 'Playlist sincronizzata con successo!', false);
+        this.playlistIdInput = '';  // Svuota l'input
       },
       error: (err) => {
         this.isSubmitting = false;
-        // Recupera il messaggio d'errore inviato dalla mappa del backend
-        const errorMessage = err.error?.message || `Errore di rete o permessi insufficienti (${err.status})`;
+        // Recupera il messaggio di errore dal backend o genera un messaggio leggibile
+        const errorMessage = err.error?.message || (typeof err.error === 'string' ? err.error : `Errore di sincronizzazione (${err.status})`);
         this.showFeedback(errorMessage, true);
       }
     });
   }
 
-  // Modello vuoto legato ai campi del Form
+  // Modello legato al Form di inserimento manuale singolo video
   nuovoVideo: VideoDto = {
     titolo: '',
     descrizione: '',
@@ -57,7 +56,6 @@ export class GestioneVideoComponent {
 
   messaggioSuccesso: string | null = null;
   messaggioErrore: string | null = null;
-
   inviando: boolean = false;
 
   inviaForm(): void {
@@ -65,12 +63,10 @@ export class GestioneVideoComponent {
     this.messaggioErrore = null;
     this.inviando = true;
 
-    // FORZATURA: Se premium è null o undefined, lo trasformiamo in un false nativo
     this.nuovoVideo.premium = !!this.nuovoVideo.premium;
 
-    // Se l'utente non inserisce una thumbnail, ne generiamo una standard partendo dall'ID YouTube
     if (!this.nuovoVideo.thumbnailUrl.trim() && this.nuovoVideo.youtubeId) {
-      this.nuovoVideo.thumbnailUrl = `https://img.youtube.com/vi/${this.nuovoVideo.youtubeId}/0.jpg`;
+      this.nuovoVideo.thumbnailUrl = `https://img.youtube.com/vi/${this.nuovoVideo.youtubeId}/hqdefault.jpg`;
     }
 
     this.videoService.salvaVideo(this.nuovoVideo).subscribe({
@@ -78,13 +74,13 @@ export class GestioneVideoComponent {
         this.messaggioSuccesso = `Video "${videoSalvato.titolo}" inserito con successo nel database!`;
         this.resetForm();
         this.inviando = false;
-        this.cdr.detectChanges(); // Svegliamo Angular per mostrare il banner verde
+        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Errore durante il salvataggio:", err);
-        this.messaggioErrore = "Impossibile salvare il video. Verifica che il tuo token sia valido e di avere i permessi STORE.";
+        this.messaggioErrore = "Impossibile salvare il video. Verifica token e permessi STORE/ADMIN.";
         this.inviando = false;
-        this.cdr.detectChanges(); // Mostriamo il banner rosso
+        this.cdr.detectChanges();
       }
     });
   }
@@ -92,6 +88,7 @@ export class GestioneVideoComponent {
   private showFeedback(message: string, error: boolean): void {
     this.feedbackMessage = message;
     this.isError = error;
+    this.cdr.detectChanges(); // <-- Forza sempre l'aggiornamento grafico
   }
 
   private resetForm(): void {

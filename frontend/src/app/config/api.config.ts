@@ -1,4 +1,9 @@
-// Rileva automaticamente l'IP/Hostname su cui sta girando Angular (es. localhost oppure 192.168.1.X)
+// / Rileva l'host su cui gira il browser (es: 'localhost', '192.168.1.30', 'eclettici.it')
 const hostname = window.location.hostname;
 
-export const API_BASE_URL = `http://${hostname}/api`;
+// Se è un ambiente locale (localhost o IP di rete LAN), usa la porta 8082 di Spring Boot
+const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.');
+
+export const API_BASE_URL = isLocal
+  ? `http://${hostname}:8082/api`
+  : `https://${hostname}/api`;

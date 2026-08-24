@@ -1,15 +1,21 @@
 <div class="min-h-screen bg-slate-950 p-6 text-white">
   <div class="max-w-7xl mx-auto space-y-6">
 
-    <div>
-      <h1 class="text-3xl font-bold tracking-tight">🎓 Catalogo <span class="text-indigo-500">Videolezioni</span></h1>
-      <p class="text-slate-400 text-sm mt-1">Seleziona un argomento dal catalogo multimediale e avvia lo studio.</p>
+    <!-- BARRA SUPERIORE: NAVIGAZIONE CATALOGO -->
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+      <a routerLink="/videolezioni" class="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition cursor-pointer no-underline">
+        ← Torna al Catalogo Corsi
+      </a>
+      <span class="text-xs text-slate-400 font-mono">
+        Lezioni disponibili: {{ listaVideo.length }}
+      </span>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
+      <!-- COLONNA SINISTRA: LISTA LEZIONI DEL CORSO -->
       <div class="space-y-4 max-h-[700px] overflow-y-auto pr-2">
-        @for (video of listaVideo; track video.youtubeId) {
+        @for (video of listaVideo; track video.youtubeId; let i = $index) {
           <div
             (click)="selezionaVideo(video)"
             [class.border-indigo-500]="videoSelezionato?.youtubeId === video.youtubeId"
@@ -21,14 +27,18 @@
               <h4 class="text-white font-medium text-sm truncate">{{ video.titolo }}</h4>
               <p class="text-slate-400 text-xs truncate mt-1">{{ video.descrizione }}</p>
 
-              <div class="mt-2">
+              <div class="mt-2 flex items-center gap-2">
                 @if (video.premium) {
                   <span class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase rounded">
                     👑 Premium
                   </span>
+                } @else if (i === 0) {
+                  <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase rounded">
+                    🎬 Anteprima Libera
+                  </span>
                 } @else {
                   <span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase rounded">
-                    🎁 Gratis
+                    🆓 Gratis
                   </span>
                 }
               </div>
@@ -37,32 +47,68 @@
         }
       </div>
 
+      <!-- COLONNA DESTRA: PLAYER VIDEO O BLOCCHI DI ACCESSO -->
       <div class="lg:col-span-2">
-        @if (mostraBannerUpgrade) {
+
+        <!-- CASO 1: BLOCCO CONTENUTO PREMIUM -->
+        @if (statoVisione === 'BLOCCO_PREMIUM') {
           <div class="bg-slate-900 border border-amber-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[450px]">
-            <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center text-2xl border border-amber-500/20">
+            <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center text-3xl border border-amber-500/20">
               👑
             </div>
             <div class="space-y-2">
-              <h3 class="text-2xl font-bold text-white">Contenuto Premium Esclusivo</h3>
+              <h3 class="text-2xl font-bold text-white">Contenuto Riservato</h3>
               <p class="text-slate-400 text-sm max-w-md mx-auto">
-                Questa lezione fa parte del programma di specializzazione avanzato. Passa al livello <span class="text-indigo-400 font-bold">STORE</span> per sbloccare l'intera playlist e scaricare i sorgenti completi.
+                Questa lezione fa parte del programma specialistico. Effettua l'upgrade al piano <span class="text-indigo-400 font-bold">STORE</span> per sbloccare tutti i moduli avanzati.
               </p>
             </div>
-            <button class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition shadow-lg shadow-orange-600/10 cursor-pointer">
-              Effettua l'Upgrade del Piano
-            </button>
+            @if (!isLoggedIn) {
+              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md">
+                Accedi al tuo Account
+              </a>
+            } @else {
+              <button class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition shadow-lg cursor-pointer">
+                Effettua l'Upgrade del Piano
+              </button>
+            }
           </div>
-        } @else if (videoSelezionato) {
+        }
+
+        <!-- CASO 2: BLOCCO LOGIN PER LEZIONI GRATUITE (NON ANTEPRIMA) -->
+        @else if (statoVisione === 'BLOCCO_LOGIN_GRATIS') {
+          <div class="bg-slate-900 border border-indigo-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[450px]">
+            <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center text-3xl border border-indigo-500/20">
+              🔒
+            </div>
+            <div class="space-y-2">
+              <h3 class="text-2xl font-bold text-white">Lezione Gratuita per Iscritti</h3>
+              <p class="text-slate-400 text-sm max-w-md mx-auto">
+                Crea un account gratuito per continuare a guardare tutte le lezioni del corso, tenere traccia dei tuoi progressi e partecipare alle discussioni.
+              </p>
+            </div>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-2">
+              <a [routerLink]="['/register']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md">
+                Registrati Gratis in 30 secondi
+              </a>
+              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-6 rounded-xl text-sm transition no-underline border border-slate-700">
+                Ho già un account: Accedi
+              </a>
+            </div>
+          </div>
+        }
+
+        <!-- CASO 3: VIDEO RIPRODUCIBILE -->
+        @else if (statoVisione === 'RIPRODUCI' && videoSelezionato) {
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
 
+            <!-- PLAYER YOUTUBE CON SAFE URL PIPE -->
             <div class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800">
               <iframe
-                [src]="'https://www.youtube.com/embed/' + videoSelezionato.youtubeId | safeUrl"
+                [src]="videoSelezionato.youtubeId | safeUrl"
                 class="w-full h-full"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen
-              ></iframe>
+                allowfullscreen>
+              </iframe>
             </div>
 
             <div class="space-y-2">
@@ -71,84 +117,92 @@
               <p class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{{ videoSelezionato.descrizione }}</p>
             </div>
 
-            <div class="mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
-              <div>
-                <h3 class="text-base font-semibold text-white">Stato della Lezione</h3>
-                <p class="text-xs text-slate-400">Segna questo video come completato per aggiornare il tuo avanzamento.</p>
-              </div>
+            <!-- AVANZAMENTO (SOLO UTENTI LOGGATI) -->
+            @if (isLoggedIn) {
+              <div class="mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
+                <div>
+                  <h3 class="text-base font-semibold text-white">Stato della Lezione</h3>
+                  <p class="text-xs text-slate-400">Segna questo video come completato per aggiornare il tuo avanzamento.</p>
+                </div>
 
-              <div class="flex items-center space-x-3">
-                <label for="completato-checkbox" class="text-sm font-medium text-slate-300 cursor-pointer select-none">
-                  Lezione Completata
-                </label>
-                <input
-                  id="completato-checkbox"
-                  type="checkbox"
-                  [checked]="videoIsCompleted"
-                  (change)="toggleCompleto($event)"
-                  class="w-5 h-5 text-indigo-600 bg-slate-900 border-slate-700 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer"
-                />
+                <div class="flex items-center space-x-3">
+                  <label for="completato-checkbox" class="text-sm font-medium text-slate-300 cursor-pointer select-none">
+                    Lezione Completata
+                  </label>
+                  <input
+                    id="completato-checkbox"
+                    type="checkbox"
+                    [checked]="videoIsCompleted"
+                    (change)="toggleCompleto($event)"
+                    class="w-5 h-5 text-indigo-600 bg-slate-900 border-slate-700 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer"
+                  />
+                </div>
               </div>
-            </div>
+            }
 
+            <!-- SEZIONE COMMENTI -->
             <div class="mt-8 pt-4 border-t border-slate-800 space-y-4">
               <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                💬 Commenti ({{ listaCommenti.length }})
+                Commenti ({{ listaCommenti.length }})
               </h3>
 
-              <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-                <label for="textareaCommento" class="block text-xs text-slate-400">
-                  Poni una domanda o lascia un feedback su questa lezione
-                </label>
-                <textarea
-                  id="textareaCommento"
-                  rows="3"
-                  class="w-full p-3 bg-slate-900 border border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
-                  placeholder="Scrivi qui il tuo commento..."
-                  [(ngModel)]="nuovoCommentoTesto">
-                </textarea>
-                <div class="flex justify-end">
-                  <button
-                    class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium py-2 px-5 rounded-lg text-sm transition cursor-pointer"
-                    (click)="aggiungiCommento()"
-                    [disabled]="!nuovoCommentoTesto.trim()">
-                    Pubblica
-                  </button>
-                </div>
-              </div>
-
-              <div class="space-y-3">
-                <div *ngIf="listaCommenti.length === 0" class="text-slate-500 text-center py-6 text-sm border border-dashed border-slate-800 rounded-xl">
-                  Non ci sono ancora commenti per questa lezione. Sii il primo a rompere il ghiaccio!
-                </div>
-
-                <div
-                  class="p-4 bg-slate-950/40 border-l-4 border-indigo-500 border-y border-r border-slate-800 rounded-r-xl space-y-2"
-                  *ngFor="let commento of listaCommenti">
-
-                  <div class="flex justify-between items-center text-xs">
-                  <span class="font-semibold text-indigo-400 flex items-center gap-1">
-                    👤 {{ commento.authorName }}
-                    <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono uppercase ml-1">
-                      {{ commento.authorRole }}
-                    </span>
-                  </span>
-                    <span class="text-slate-500">
-                      {{ commento.createdAt | date:'dd/MM/yyyy HH:mm' }}
-                    </span>
+              @if (isLoggedIn) {
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+                  <label for="textareaCommento" class="block text-xs text-slate-400">
+                    Poni una domanda o lascia un feedback su questa lezione
+                  </label>
+                  <textarea
+                    id="textareaCommento"
+                    rows="3"
+                    class="w-full p-3 bg-slate-900 border border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
+                    placeholder="Scrivi qui il tuo commento..."
+                    [(ngModel)]="nuovoCommentoTesto">
+                  </textarea>
+                  <div class="flex justify-end">
+                    <button
+                      class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium py-2 px-5 rounded-lg text-sm transition cursor-pointer"
+                      (click)="aggiungiCommento()"
+                      [disabled]="!nuovoCommentoTesto.trim()">
+                      Pubblica
+                    </button>
                   </div>
-
-                  <p class="text-slate-300 text-sm whitespace-pre-line" style="word-break: break-word;">
-                    {{ commento.content }}
-                  </p>
                 </div>
+              } @else {
+                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl text-center text-sm text-slate-400">
+                  <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="text-indigo-400 hover:underline font-semibold">Accedi</a> per porre domande e commentare le lezioni.
+                </div>
+              }
+
+              <!-- LISTA COMMENTI -->
+              <div class="space-y-3">
+                @if (listaCommenti.length === 0) {
+                  <div class="text-slate-500 text-center py-6 text-sm border border-dashed border-slate-800 rounded-xl">
+                    Non ci sono ancora commenti per questa lezione.
+                  </div>
+                }
+
+                @for (commento of listaCommenti; track commento.id) {
+                  <div class="p-4 bg-slate-950/40 border-l-4 border-indigo-500 border-y border-r border-slate-800 rounded-r-xl space-y-2">
+                    <div class="flex justify-between items-center text-xs">
+                      <span class="font-semibold text-indigo-400 flex items-center gap-1">
+                        👤 {{ commento.authorName }}
+                        <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono uppercase ml-1">
+                          {{ commento.authorRole }}
+                        </span>
+                      </span>
+                      <span class="text-slate-500">
+                        {{ commento.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                      </span>
+                    </div>
+
+                    <p class="text-slate-300 text-sm whitespace-pre-line break-words">
+                      {{ commento.content }}
+                    </p>
+                  </div>
+                }
               </div>
             </div>
-          </div>
-        } @else {
-          <div class="border border-dashed border-slate-800 bg-slate-900/20 rounded-2xl p-8 text-center text-slate-500 text-sm min-h-[450px] flex flex-col items-center justify-center gap-2">
-            <span>📺</span>
-            <span>Seleziona una videolezione dall'elenco per avviare il riproduttore.</span>
+
           </div>
         }
       </div>
