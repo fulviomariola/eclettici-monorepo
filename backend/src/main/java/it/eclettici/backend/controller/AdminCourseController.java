@@ -1,3 +1,4 @@
+// AdminCourseController.java
 package it.eclettici.backend.controller;
 
 import it.eclettici.backend.entity.Course;
@@ -20,7 +21,7 @@ public class AdminCourseController {
     }
 
     @PostMapping("/sync")
-    @PreAuthorize("hasAnyRole('STORE', 'ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") // <-- Modificato da hasAnyRole('STORE', 'ADMIN') a hasRole('ADMIN')
     public ResponseEntity<Map<String, Object>> syncCourseFromPlaylist(@RequestParam String playlistId) {
         Course course = importService.syncPlaylist(playlistId);
 

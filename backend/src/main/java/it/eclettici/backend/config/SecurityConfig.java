@@ -76,7 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/progress/**").authenticated()
 
                         // Rotte generiche Admin / Store
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "STORE")
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.POST, "/api/videos").hasRole("STORE")
                         .requestMatchers(HttpMethod.GET, "/api/videos/premium").hasAnyRole("STUDENT", "STORE", "ADMIN")
 

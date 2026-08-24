@@ -54,7 +54,7 @@
     </a>
 
     @if (currentRole$ | async; as ruolo) {
-      @if (ruolo === 'STUDENT' || ruolo === 'STORE') {
+      @if (ruolo === 'STUDENT' || ruolo === 'STORE' || ruolo === 'ADMIN') {
         <a routerLink="/corsi"
            (click)="isMenuAperto = false"
            routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -64,7 +64,8 @@
         </a>
       }
 
-      @if (ruolo === 'STORE') {
+      <!-- Visibile ESCLUSIVAMENTE per ADMIN -->
+      @if (ruolo === 'ADMIN') {
         <a routerLink="/gestione-video"
            (click)="isMenuAperto = false"
            routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -72,6 +73,9 @@
            class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
           Pannello Controllo
         </a>
+      }
+
+      @if (ruolo === 'STORE') {
         <a routerLink="/admin/nuovo-video"
            (click)="isMenuAperto = false"
            routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -81,7 +85,7 @@
         </a>
       }
 
-      @if (ruolo === 'STUDENT' || ruolo === 'STORE') {
+      @if (ruolo === 'STUDENT' || ruolo === 'STORE' || ruolo === 'ADMIN') {
         <a routerLink="/dashboard"
            (click)="isMenuAperto = false"
            routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"

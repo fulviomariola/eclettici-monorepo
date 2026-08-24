@@ -20,14 +20,17 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'youtube', component: YoutubeComponent },
   { path: 'github', component: GithubComponent },
-  { path: 'gestione-video', component: GestioneVideoComponent, canActivate: [authGuard] },
+
+  // Rotta riservata esclusivamente ad ADMIN
+  {
+    path: 'gestione-video',
+    component: GestioneVideoComponent,
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] } // <-- Aggiunto vincolo di ruolo
+  },
+
   { path: 'cosa-mi-ha-portato-qui', component: CosaMiHaPortatoQui },
-
-  // Livello 1: Catalogo a griglia dei Corsi
   { path: 'videolezioni', component: CatalogoCorsiComponent },
-
-  // Livello 2: Aula Virtuale con player e lezioni del singolo corso
   { path: 'videolezioni/:courseId', component: VideolezioniComponent },
-
   { path: '**', redirectTo: '' }
 ];
