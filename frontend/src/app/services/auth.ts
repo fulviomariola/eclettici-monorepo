@@ -1,13 +1,14 @@
 import { Injectable, inject } from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import { BehaviorSubject,Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 // DTO specifico e rigido per la Registrazione (tutti i campi sono obbligatori)
 export interface UserRegistrationDto {
   nome?: string;
   cognome?: string;
   email: string;
-  password:  string;
+  password: string;
   ruolo?: string;
 }
 
@@ -31,28 +32,86 @@ export interface LoginResponseDto {
 })
 export class AuthService {
   private http = inject(HttpClient);
+  private router = inject(Router);
   private apiUrl = '/api/auth';
+
+  // Timer per la gestione della scadenza automatica in background
+  private timerScadenza: ReturnType<typeof setTimeout> | null = null;
 
   // Il BehaviorSubject mantiene lo stato del ruolo attuale (legge dal localStorage all'avvio)
   private userRoleSubject = new BehaviorSubject<string | null>(localStorage.getItem('user_role'));
   userRole$: Observable<string | null> = this.userRoleSubject.asObservable();
 
-  /**
-   * Metodo da chiamare subito dopo il login per aggiornare lo stato
-   */
-  aggiornaStatoSessione(): void {
-    this.userRoleSubject.next(localStorage.getItem('user_role'));
+  constructor() {
+    // Al ricaricamento della pagina, se c'è un token attivo avvia il monitoraggio della scadenza
+    const token = localStorage.getItem('token');
+    if (token) {
+      this.avviaTimerAutoLogout(token);
+    }
   }
 
   /**
-   * Svuota la sessione e notifica i componenti
+   * Metodo da chiamare subito dopo il login per aggiornare lo stato e avviare il timer
+   */
+  aggiornaStatoSessione(): void {
+    const token = localStorage.getItem('token');
+    this.userRoleSubject.next(localStorage.getItem('user_role'));
+
+    if (token) {
+      this.avviaTimerAutoLogout(token);
+    }
+  }
+
+  /**
+   * Calcola i millisecondi rimanenti e programma il logout esatto
+   */
+  avviaTimerAutoLogout(token: string): void {
+    if (this.timerScadenza) {
+      clearTimeout(this.timerScadenza);
+      this.timerScadenza = null;
+    }
+
+    try {
+      const payloadBase64 = token.split('.')[1];
+      if (!payloadBase64) {
+        this.logout();
+        return;
+      }
+
+      const payload = JSON.parse(atob(payloadBase64));
+      const tempoRimanenteMs = (payload.exp * 1000) - Date.now();
+      //const tempoRimanenteMs = 15000;
+
+      if (tempoRimanenteMs > 0) {
+        this.timerScadenza = setTimeout(() => {
+          this.logout();
+          void this.router.navigate(['/login']);
+        }, tempoRimanenteMs);
+      } else {
+        // Se il token è già scaduto
+        this.logout();
+        void this.router.navigate(['/login']);
+      }
+    } catch {
+      this.logout();
+      void this.router.navigate(['/login']);
+    }
+  }
+
+  /**
+   * Svuota la sessione, interrompe i timer e notifica i componenti
    */
   logout(): void {
+    if (this.timerScadenza) {
+      clearTimeout(this.timerScadenza);
+      this.timerScadenza = null;
+    }
+
     localStorage.removeItem('token');
-      localStorage.removeItem('user_id');
-      localStorage.removeItem('user_email');
-      localStorage.removeItem('user_role');
-      this.userRoleSubject.next(null);
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('user_email');
+    localStorage.removeItem('user_role');
+    this.userRoleSubject.next(null);
   }
 
   registraUtente(dati: UserRegistrationDto): Observable<any> {
@@ -66,9 +125,9 @@ export class AuthService {
   /**
    * Verifica se l'email esiste già nel database
    */
-   checkEmail(email: string): Observable<boolean> {
-     return this.http.get<boolean>(`${this.apiUrl}/check-email`, {
-       params: { email }
-     });
+  checkEmail(email: string): Observable<boolean> {
+    return this.http.get<boolean>(`${this.apiUrl}/check-email`, {
+      params: { email }
+    });
   }
 }

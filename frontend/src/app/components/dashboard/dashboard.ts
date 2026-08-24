@@ -1,21 +1,20 @@
+// dashboard.ts
 import { Component, OnInit, ViewChild, inject, ChangeDetectorRef } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { ScrollFadeDirective } from '../../directives/scroll-fade.directive';
 import { EmailPanelComponent } from './email-panel/email-panel.component';
 import { ProductsPanelComponent } from './products-panel/products-panel.component';
 
 // IMPORT SOTTO-COMPONENTI
-import { AcademySectionComponent } from './academy-section/academy-section.component';
 import { StorePanelComponent } from './store-panel/store-panel.component';
 import { AdminPanelComponent } from './admin-panel/admin-panel.component';
 import { CommunityBoardComponent } from './community-board/community-board.component';
 import { ServicesPanelComponent } from './services-panel/services-panel.component';
+import { ContactsPanelComponent } from './contacts-panel/contacts-panel.component';
 
 import { PostService, PostResponseDto } from '../../services/post';
 import { VideoService } from '../../services/video.service';
 import { VideoDto } from '../../models/video';
-import {ContactsPanelComponent} from './contacts-panel/contacts-panel.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -23,8 +22,6 @@ import {ContactsPanelComponent} from './contacts-panel/contacts-panel.component'
   imports: [
     CommonModule,
     RouterLink,
-    ScrollFadeDirective,
-    AcademySectionComponent,
     StorePanelComponent,
     AdminPanelComponent,
     CommunityBoardComponent,
@@ -42,7 +39,6 @@ export class DashboardComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild(CommunityBoardComponent) communityBoard!: CommunityBoardComponent;
-  @ViewChild(AcademySectionComponent) academySection!: AcademySectionComponent;
 
   userEmail: string | null = '';
   currentUserId: string = '';
@@ -92,9 +88,6 @@ export class DashboardComponent implements OnInit {
   }
 
   onVideoCreated(): void {
-    if (this.academySection) {
-      this.academySection.loadVideos();
-    }
     if (this.userRole === 'ADMIN') {
       this.loadAdminStats();
     }
