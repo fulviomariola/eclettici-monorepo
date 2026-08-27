@@ -19,31 +19,155 @@
       </div>
     </div>
 
-    <!-- USER INFO -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
-      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800">
+    <!-- USER INFO & METRICHE GLOBALI -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800 flex flex-col justify-between">
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Account Attivo</h3>
-        <p class="text-base font-medium text-white break-all">{{ userEmail }}</p>
+        <p class="text-sm font-medium text-white truncate">{{ userEmail }}</p>
       </div>
 
-      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800">
+      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800 flex flex-col justify-between">
         <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Ruolo Permessi</h3>
         <div>
           @if (userRole === 'ADMIN') {
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 mt-1">
-              👑 Super Amministratore
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              👑 Super Admin
             </span>
           } @else if (userRole === 'STORE') {
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 mt-1">
-              🏪 Gestore Negozio
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              🏪 Gestore Store
             </span>
           } @else {
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-1">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
               🎓 Studente
             </span>
           }
         </div>
       </div>
+
+      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800 flex flex-col justify-between">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Lezioni Svolte</h3>
+        <p class="text-2xl font-extrabold text-emerald-400">
+          {{ totaleLezioniCompletate }} <span class="text-xs font-normal text-slate-400">totali</span>
+        </p>
+      </div>
+
+      <div class="p-4 bg-slate-800/50 rounded-xl border border-slate-800 flex flex-col justify-between">
+        <h3 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Attestati Conseguiti</h3>
+        <p class="text-2xl font-extrabold text-indigo-400">
+          {{ listaCertificati.length }} <span class="text-xs font-normal text-slate-400">totali</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- SEZIONE: I MIEI CORSI IN CORSO -->
+    <div class="mb-10">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span>🚀</span> Continua ad Imparare
+          </h2>
+          <p class="text-xs text-slate-400">Riprendi subito lo studio dai corsi che hai già avviato</p>
+        </div>
+        <a routerLink="/videolezioni" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold transition no-underline">
+          Tutti i Corsi →
+        </a>
+      </div>
+
+      @if (isLoadingCorsi) {
+        <div class="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-800">
+          <p class="text-xs text-slate-400 animate-pulse">Caricamento avanzamento corsi in corso...</p>
+        </div>
+      } @else if (corsiIniziati.length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          @for (item of corsiIniziati; track item.corso.id) {
+            <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4 flex flex-col justify-between hover:border-indigo-500/40 transition-all">
+              <div class="flex gap-4">
+                <img [src]="item.corso.thumbnailUrl || 'https://img.youtube.com/vi/cUrqAAkx5vo/hqdefault.jpg'"
+                     [alt]="item.corso.title"
+                     class="w-24 h-16 object-cover rounded-lg flex-shrink-0 bg-black" />
+
+                <div class="space-y-1 min-w-0 flex-1">
+                  <h4 class="text-sm font-bold text-white truncate">{{ item.corso.title }}</h4>
+                  <div class="flex justify-between items-center text-xs text-slate-400">
+                    <span>{{ item.completati }} / {{ item.corso.totalLessons }} lezioni</span>
+                    <span class="font-bold text-emerald-400">{{ item.percentuale }}%</span>
+                  </div>
+                  <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div class="bg-emerald-500 h-full transition-all duration-300" [style.width.%]="item.percentuale"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="mt-4 pt-3 border-t border-slate-800/80 flex justify-end">
+                <a [routerLink]="['/videolezioni', item.corso.id]"
+                   class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white transition no-underline shadow-sm">
+                  <span>Riprendi Lezione</span>
+                  <span>➜</span>
+                </a>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="p-8 text-center bg-slate-950/40 rounded-2xl border border-dashed border-slate-800 space-y-2">
+          <p class="text-sm text-slate-400">Non hai ancora iniziato alcun percorso didattico.</p>
+          <a routerLink="/videolezioni"
+             class="inline-block mt-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl transition no-underline">
+            Esplora il Catalogo Corsi
+          </a>
+        </div>
+      }
+    </div>
+
+    <!-- SEZIONE: I MIEI CERTIFICATI -->
+    <div class="mb-10 bg-slate-950/40 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span>🎓</span> I Miei Certificati Ufficiali ({{ listaCertificati.length }})
+          </h2>
+          <p class="text-xs text-slate-400">Attestati conseguiti al superamento dei test finali</p>
+        </div>
+      </div>
+
+      @if (isLoadingCertificati) {
+        <div class="p-6 text-center text-xs text-indigo-400 animate-pulse">
+          Caricamento attestati...
+        </div>
+      } @else if (listaCertificati.length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          @for (cert of listaCertificati; track cert.attemptId) {
+            <div class="p-4 bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl flex items-center justify-between gap-3 transition shadow-sm">
+              <div class="space-y-1 min-w-0">
+                <h4 class="text-sm font-semibold text-white truncate">{{ cert.courseTitle }}</h4>
+                <div class="text-[11px] text-slate-400 flex items-center gap-2">
+                  <span>Data: {{ cert.issuedAt | date:'dd/MM/yyyy' }}</span>
+                  <span>•</span>
+                  <span class="text-emerald-400 font-bold">Voto: {{ cert.score }}%</span>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <a [routerLink]="['/verifica-certificato', cert.attemptId]"
+                   class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition no-underline"
+                   title="Verifica pubblicamente">
+                  🔍
+                </a>
+                <button
+                  (click)="scaricaCertificato(cert.courseId)"
+                  class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+                  <span>📥 PDF</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="p-6 text-center text-xs text-slate-400 border border-dashed border-slate-800 rounded-xl">
+          Non hai ancora conseguito attestati. Completa le lezioni di un corso e supera il test finale con almeno il 60% per generare il tuo certificato.
+        </div>
+      }
     </div>
 
     <!-- BARRA DELLE SCHEDE (Mostrata solo a ruoli amministrativi) -->
@@ -86,8 +210,6 @@
     }
 
     <!-- CONTENUTO SCHEDE -->
-
-    <!-- SCHEDA 1: Community (Predefinita per tutti) -->
     @if (activeTab === 'community' || userRole === 'STUDENT') {
       <app-community-board [currentUserId]="currentUserId"
                            [userRole]="userRole"
@@ -95,7 +217,6 @@
       </app-community-board>
     }
 
-    <!-- SCHEDA 2: Gestione Ruolo (STORE / ADMIN) -->
     @if (activeTab === 'management') {
       @if (userRole === 'STORE') {
         <app-store-panel [currentUserId]="currentUserId"
@@ -111,7 +232,6 @@
       }
     }
 
-    <!-- SCHEDA 3: Prodotti, Servizi e Contatti -->
     @if (activeTab === 'store') {
       <div class="space-y-8">
         <app-services-panel></app-services-panel>
@@ -122,7 +242,6 @@
       </div>
     }
 
-    <!-- SCHEDA 4: Email Panel (Solo ADMIN) -->
     @if (activeTab === 'email' && userRole === 'ADMIN') {
       <app-email-panel></app-email-panel>
     }

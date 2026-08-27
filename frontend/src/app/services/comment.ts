@@ -59,9 +59,11 @@ export class CommentService {
 
   /**
    * Cancella un commento.
-   * Mantiene i 2 argomenti per non rompere la Dashboard, ignorando internamente il postId.
+   * Supporta sia la chiamata a 1 argomento (Videolezioni: deleteComment(commentId))
+   * sia a 2 argomenti (Dashboard: deleteComment(postId, commentId)).
    */
-  deleteComment(postId: string, commentId: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${commentId}`, this.httpOptions);
+  deleteComment(commentIdOrPostId: string, maybeCommentId?: string): Observable<void> {
+    const targetCommentId = maybeCommentId ? maybeCommentId : commentIdOrPostId;
+    return this.http.delete<void>(`${this.apiUrl}/${targetCommentId}`, this.httpOptions);
   }
 }

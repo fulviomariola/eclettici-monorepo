@@ -14,9 +14,18 @@ import { ContactsPanelComponent } from './contacts-panel/contacts-panel.componen
 import { PostService, PostResponseDto } from '../../services/post';
 import { VideoService } from '../../services/video.service';
 import { VideoDto } from '../../models/video';
+import { CourseService } from '../../services/course.service';
+import { ProgressService } from '../../services/progress.service';
+import { CourseSummaryDto } from '../../models/course';
+import { QuizService, UserCertificateDto } from '../../services/quiz.service';
 
-// Tipo per le schede disponibili
 export type DashboardTab = 'community' | 'management' | 'store' | 'email';
+
+export interface CorsoAvanzamento {
+  corso: CourseSummaryDto;
+  completati: number;
+  percentuale: number;
+}
 
 @Component({
   selector: 'app-dashboard',
@@ -38,6 +47,9 @@ export class DashboardComponent implements OnInit {
   private router = inject(Router);
   private postService = inject(PostService);
   private videoService = inject(VideoService);
+  private courseService = inject(CourseService);
+  private progressService = inject(ProgressService);
+  private quizService = inject(QuizService);
   private cdr = inject(ChangeDetectorRef);
 
   @ViewChild(CommunityBoardComponent) communityBoard!: CommunityBoardComponent;
@@ -46,12 +58,21 @@ export class DashboardComponent implements OnInit {
   currentUserId: string = '';
   userRole: string = '';
 
-  // Scheda attiva predefinita
   activeTab: DashboardTab = 'community';
 
   postsList: PostResponseDto[] = [];
   videosList: VideoDto[] = [];
   showOnlyPrivate: boolean = false;
+
+  // Dati e Statistiche Corsi Studente
+  corsiIniziati: CorsoAvanzamento[] = [];
+  totaleLezioniCompletate: number = 0;
+  corsiCompletatiCount: number = 0;
+  isLoadingCorsi: boolean = true;
+
+  // Dati Certificati Conseguiti
+  listaCertificati: UserCertificateDto[] = [];
+  isLoadingCertificati: boolean = true;
 
   ngOnInit(): void {
     this.userEmail = localStorage.getItem('user_email');
@@ -60,11 +81,106 @@ export class DashboardComponent implements OnInit {
 
     if (!this.userEmail || !this.currentUserId) {
       void this.router.navigate(['/login']);
+      return;
     }
 
     if (this.userRole === 'ADMIN') {
       this.loadAdminStats();
     }
+
+    this.caricaCorsiEProgressi();
+    this.caricaCertificati();
+  }
+
+  caricaCorsiEProgressi(): void {
+    this.isLoadingCorsi = true;
+    this.courseService.getCourses().subscribe({
+      next: (corsi) => {
+        if (!corsi || corsi.length === 0) {
+          this.isLoadingCorsi = false;
+          this.cdr.detectChanges();
+          return;
+        }
+
+        this.corsiIniziati = [];
+        this.totaleLezioniCompletate = 0;
+        this.corsiCompletatiCount = 0;
+        let verificati = 0;
+
+        corsi.forEach((corso) => {
+          this.progressService.getCompletedLessons(corso.id).subscribe({
+            next: (completedIds: string[]) => {
+              const numCompletati = completedIds ? completedIds.length : 0;
+              this.totaleLezioniCompletate += numCompletati;
+
+              const percentuale = (corso.totalLessons && corso.totalLessons > 0)
+                ? Math.min(100, Math.round((numCompletati / corso.totalLessons) * 100))
+                : 0;
+
+              if (percentuale === 100 && corso.totalLessons > 0) {
+                this.corsiCompletatiCount++;
+              }
+
+              if (numCompletati > 0) {
+                this.corsiIniziati.push({
+                  corso,
+                  completati: numCompletati,
+                  percentuale
+                });
+              }
+
+              verificati++;
+              if (verificati === corsi.length) {
+                this.isLoadingCorsi = false;
+                this.cdr.detectChanges();
+              }
+            },
+            error: () => {
+              verificati++;
+              if (verificati === corsi.length) {
+                this.isLoadingCorsi = false;
+                this.cdr.detectChanges();
+              }
+            }
+          });
+        });
+      },
+      error: (err) => {
+        console.error('Errore nel caricamento corsi dashboard:', err);
+        this.isLoadingCorsi = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  caricaCertificati(): void {
+    this.isLoadingCertificati = true;
+    this.quizService.getUserCertificates().subscribe({
+      next: (data) => {
+        this.listaCertificati = data || [];
+        this.isLoadingCertificati = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Errore nel caricamento dei certificati:', err);
+        this.isLoadingCertificati = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  scaricaCertificato(courseId: number): void {
+    this.quizService.scaricaCertificato(courseId).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Certificato_Corso_${courseId}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: (err) => console.error('Errore durante il download del certificato:', err)
+    });
   }
 
   setTab(tab: DashboardTab): void {

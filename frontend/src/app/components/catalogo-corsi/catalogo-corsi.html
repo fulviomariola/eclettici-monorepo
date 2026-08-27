@@ -11,6 +11,56 @@
       </p>
     </div>
 
+    <!-- BARRA DI RICERCA E FILTRI RAPIDI -->
+    @if (!isLoading && listaCorsi.length > 0) {
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <!-- Campo di Ricerca Testuale -->
+        <div class="relative w-full sm:w-80">
+          <input
+            type="text"
+            [(ngModel)]="testoRicerca"
+            placeholder="Cerca un corso per titolo o tema..."
+            class="w-full bg-slate-900 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition shadow-inner"
+          />
+          @if (testoRicerca) {
+            <button
+              (click)="testoRicerca = ''"
+              class="absolute right-3 top-2.5 text-xs text-slate-500 hover:text-white transition">
+              ✕
+            </button>
+          }
+        </div>
+
+        <!-- Pulsanti Filtro Categoria -->
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl w-full sm:w-auto justify-center">
+          <button
+            (click)="impostaFiltro('TUTTI')"
+            [class.bg-indigo-600]="filtroSelezionato === 'TUTTI'"
+            [class.text-white]="filtroSelezionato === 'TUTTI'"
+            [class.text-slate-400]="filtroSelezionato !== 'TUTTI'"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+            Tutti ({{ listaCorsi.length }})
+          </button>
+          <button
+            (click)="impostaFiltro('GRATIS')"
+            [class.bg-emerald-600]="filtroSelezionato === 'GRATIS'"
+            [class.text-white]="filtroSelezionato === 'GRATIS'"
+            [class.text-slate-400]="filtroSelezionato !== 'GRATIS'"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+            🆓 Gratis
+          </button>
+          <button
+            (click)="impostaFiltro('PREMIUM')"
+            [class.bg-amber-600]="filtroSelezionato === 'PREMIUM'"
+            [class.text-white]="filtroSelezionato === 'PREMIUM'"
+            [class.text-slate-400]="filtroSelezionato !== 'PREMIUM'"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-semibold transition cursor-pointer">
+            👑 Premium
+          </button>
+        </div>
+      </div>
+    }
+
     <!-- LOADER -->
     @if (isLoading) {
       <div class="flex justify-center py-16 text-slate-400">
@@ -18,14 +68,14 @@
       </div>
     }
 
-    <!-- GRIGLIA A CARD (STILE CAVE OF PROGRAMMING) -->
-    @if (!isLoading && listaCorsi.length > 0) {
+    <!-- GRIGLIA A CARD -->
+    @if (!isLoading && corsiFiltrati.length > 0) {
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (corso of listaCorsi; track corso.id) {
+        @for (corso of corsiFiltrati; track corso.id) {
           <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-indigo-500/50 transition-all flex flex-col justify-between group">
 
             <div>
-              <!-- COPERTINA CON OVERLAY BADGE -->
+              <!-- COPERTINA CON OVERLAY BADGE E PROGRESSO -->
               <div class="relative aspect-video bg-black overflow-hidden">
                 <img
                   [src]="corso.thumbnailUrl || 'https://img.youtube.com/vi/cUrqAAkx5vo/hqdefault.jpg'"
@@ -50,6 +100,16 @@
                     📚 {{ corso.totalLessons }} Lezioni
                   </span>
                 </div>
+
+                <!-- BARRA DI AVANZAMENTO A FILO -->
+                @if (isLoggedIn && corso.totalLessons > 0) {
+                  <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-950/80">
+                    <div
+                      class="bg-emerald-500 h-full transition-all duration-300"
+                      [style.width.%]="getProgressPercentage(corso)">
+                    </div>
+                  </div>
+                }
               </div>
 
               <!-- CONTENUTI CARD -->
@@ -63,12 +123,29 @@
               </div>
             </div>
 
-            <!-- PULSANTE CTA -->
-            <div class="p-5 pt-0">
+            <!-- SEZIONE PROGRESSO DETTAGLIATA + PULSANTE CTA -->
+            <div class="p-5 pt-0 space-y-3">
+              @if (isLoggedIn && corso.totalLessons > 0) {
+                <div class="p-3 bg-slate-950/60 border border-slate-800/80 rounded-xl space-y-1.5">
+                  <div class="flex justify-between items-center text-xs">
+                    <span class="text-slate-400 font-medium">Il tuo progresso</span>
+                    <span class="font-bold text-emerald-400">
+                      {{ getCompletedCount(corso) }} / {{ corso.totalLessons }} ({{ getProgressPercentage(corso) }}%)
+                    </span>
+                  </div>
+                  <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                    <div
+                      class="bg-emerald-500 h-full transition-all duration-300"
+                      [style.width.%]="getProgressPercentage(corso)">
+                    </div>
+                  </div>
+                </div>
+              }
+
               <a
                 [routerLink]="['/videolezioni', corso.id]"
                 class="w-full inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition shadow-md no-underline cursor-pointer">
-                <span>Accedi al Corso</span>
+                <span>{{ isLoggedIn && getCompletedCount(corso) > 0 ? 'Continua Corso' : 'Accedi al Corso' }}</span>
                 <span>➜</span>
               </a>
             </div>
@@ -78,10 +155,17 @@
       </div>
     }
 
-    <!-- NESSUN CORSO DISPONIBILE -->
-    @if (!isLoading && listaCorsi.length === 0) {
-      <div class="text-center py-16 text-slate-500 border border-dashed border-slate-800 rounded-2xl">
-        Nessun percorso formativo attualmente disponibile.
+    <!-- NESSUN CORSO TROVATO (FILTRO O VUOTO) -->
+    @if (!isLoading && corsiFiltrati.length === 0) {
+      <div class="text-center py-16 text-slate-500 border border-dashed border-slate-800 rounded-2xl space-y-2">
+        <p class="text-sm font-medium">Nessun percorso formativo trovato con i filtri attuali.</p>
+        @if (testoRicerca || filtroSelezionato !== 'TUTTI') {
+          <button
+            (click)="testoRicerca = ''; impostaFiltro('TUTTI')"
+            class="text-xs text-indigo-400 hover:underline cursor-pointer">
+            Reimposta tutti i filtri
+          </button>
+        }
       </div>
     }
 

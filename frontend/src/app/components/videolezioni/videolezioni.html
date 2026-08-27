@@ -1,212 +1,464 @@
-<div class="min-h-screen bg-slate-950 p-6 text-white">
-  <div class="max-w-7xl mx-auto space-y-6">
+<div class="min-h-screen bg-slate-950 text-white sm:p-6">
+  <div class="max-w-7xl mx-auto space-y-4 sm:space-y-6">
 
-    <!-- BARRA SUPERIORE: NAVIGAZIONE CATALOGO -->
-    <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-      <a routerLink="/videolezioni" class="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition cursor-pointer no-underline">
+    <!-- BARRA SUPERIORE: NAVIGAZIONE CATALOGO, QUIZ & PROGRESSO CORSO -->
+    <div
+      class="p-4 sm:p-0 flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/80 pb-4 gap-4">
+      <a routerLink="/videolezioni"
+         class="inline-flex items-center gap-2 text-sm text-indigo-400 hover:text-indigo-300 font-medium transition cursor-pointer no-underline">
         ← Torna al Catalogo Corsi
       </a>
-      <span class="text-xs text-slate-400 font-mono">
-        Lezioni disponibili: {{ listaVideo.length }}
-      </span>
-    </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+        <!-- PULSANTE QUIZ -->
+        @if (quizData) {
+          <button
+            (click)="apriQuiz()"
+            class="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
+            <span>📝</span>
+            <span>Test di Verifica</span>
+          </button>
+        }
 
-      <!-- COLONNA SINISTRA: LISTA LEZIONI DEL CORSO -->
-      <div class="space-y-4 max-h-[700px] overflow-y-auto pr-2">
-        @for (video of listaVideo; track video.youtubeId; let i = $index) {
-          <div
-            (click)="selezionaVideo(video)"
-            [class.border-indigo-500]="videoSelezionato?.youtubeId === video.youtubeId"
-            class="p-4 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-indigo-500/50 transition flex items-start gap-4"
-          >
-            <img [src]="video.thumbnailUrl" class="w-24 h-14 object-cover rounded-lg bg-black" alt="Copertina">
-
-            <div class="flex-1 min-w-0">
-              <h4 class="text-white font-medium text-sm truncate">{{ video.titolo }}</h4>
-              <p class="text-slate-400 text-xs truncate mt-1">{{ video.descrizione }}</p>
-
-              <div class="mt-2 flex items-center gap-2">
-                @if (video.premium) {
-                  <span class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-bold uppercase rounded">
-                    👑 Premium
-                  </span>
-                } @else if (i === 0) {
-                  <span class="px-2 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-bold uppercase rounded">
-                    🎬 Anteprima Libera
-                  </span>
-                } @else {
-                  <span class="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-bold uppercase rounded">
-                    🆓 Gratis
-                  </span>
-                }
+        @if (isLoggedIn && listaVideo.length > 0) {
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-slate-300 font-medium">
+              Progresso: <strong class="text-emerald-400">{{ completedLessonsCount }}</strong> / {{ listaVideo.length }}
+              ({{ progressPercentage }}%)
+            </span>
+            <div class="w-24 sm:w-36 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+              <div
+                class="bg-emerald-500 h-full transition-all duration-300"
+                [style.width.%]="progressPercentage">
               </div>
             </div>
           </div>
+        } @else {
+          <span class="text-xs text-slate-400 font-mono">
+            Lezioni totali: {{ listaVideo.length }}
+          </span>
         }
       </div>
+    </div>
 
-      <!-- COLONNA DESTRA: PLAYER VIDEO O BLOCCHI DI ACCESSO -->
-      <div class="lg:col-span-2">
+    <!-- STRUTTURA RESPONSIVE: FLEX SU MOBILE, GRID SU DESKTOP -->
+    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-6 sm:gap-8">
 
-        <!-- CASO 1: BLOCCO CONTENUTO PREMIUM -->
-        @if (statoVisione === 'BLOCCO_PREMIUM') {
-          <div class="bg-slate-900 border border-amber-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[450px]">
-            <div class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center text-3xl border border-amber-500/20">
+      <!-- COLONNA PLAYER E CONTROLLI -->
+      <div id="player-container"
+           class="order-1 lg:order-2 lg:col-span-2 sticky top-0 z-40 bg-slate-950 pb-2 shadow-2xl lg:static lg:bg-transparent lg:pb-0 lg:shadow-none">
+
+        @if (listaVideo.length === 0) {
+          <div class="m-4 sm:m-0 bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center space-y-4 shadow-xl flex flex-col items-center justify-center min-h-[380px]">
+            <div class="w-16 h-16 bg-slate-800 text-slate-400 rounded-full flex items-center justify-center text-2xl border border-slate-700">
+              📂
+            </div>
+            <div class="space-y-1">
+              <h3 class="text-lg font-bold text-white">Nessuna lezione disponibile</h3>
+              <p class="text-slate-400 text-xs max-w-sm mx-auto">
+                Questo corso non contiene ancora videolezioni o non è stato sincronizzato.
+              </p>
+            </div>
+            <a routerLink="/catalogo" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition no-underline">
+              Torna al Catalogo Corsi
+            </a>
+          </div>
+        } @else if (statoVisione === 'BLOCCO_PREMIUM') {
+          <div
+            class="m-4 sm:m-0 bg-slate-900 border border-amber-500/20 rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[380px]">
+            <div
+              class="w-16 h-16 bg-amber-500/10 text-amber-400 rounded-full flex items-center justify-center text-3xl border border-amber-500/20">
               👑
             </div>
             <div class="space-y-2">
-              <h3 class="text-2xl font-bold text-white">Contenuto Riservato</h3>
+              <h3 class="text-xl sm:text-2xl font-bold text-white">Contenuto Riservato</h3>
               <p class="text-slate-400 text-sm max-w-md mx-auto">
-                Questa lezione fa parte del programma specialistico. Effettua l'upgrade al piano <span class="text-indigo-400 font-bold">STORE</span> per sbloccare tutti i moduli avanzati.
+                Questa lezione richiede l'acquisto del corso oppure l'abbonamento al piano <span
+                class="text-indigo-400 font-bold">STORE</span>.
               </p>
             </div>
+
             @if (!isLoggedIn) {
-              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md">
-                Accedi al tuo Account
+              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }"
+                 class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md">
+                Accedi per Sbloccare
               </a>
             } @else {
-              <button class="bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold py-3.5 px-8 rounded-xl text-sm transition shadow-lg cursor-pointer">
-                Effettua l'Upgrade del Piano
-              </button>
+              <div class="flex flex-col sm:flex-row gap-3 w-full justify-center max-w-md">
+                <button
+                  (click)="acquistaCorso()"
+                  [disabled]="isPurchasing"
+                  class="flex-1 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 disabled:opacity-50 text-slate-950 font-extrabold py-3.5 px-6 rounded-xl text-sm transition shadow-lg cursor-pointer">
+                  {{ isPurchasing ? 'Elaborazione...' : '💳 Acquista Singolo Corso' }}
+                </button>
+              </div>
             }
           </div>
-        }
-
-        <!-- CASO 2: BLOCCO LOGIN PER LEZIONI GRATUITE (NON ANTEPRIMA) -->
-        @else if (statoVisione === 'BLOCCO_LOGIN_GRATIS') {
-          <div class="bg-slate-900 border border-indigo-500/20 rounded-2xl p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[450px]">
-            <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center text-3xl border border-indigo-500/20">
+        } @else if (statoVisione === 'BLOCCO_LOGIN_GRATIS') {
+          <div
+            class="m-4 sm:m-0 bg-slate-900 border border-indigo-500/20 rounded-2xl p-6 sm:p-8 text-center space-y-6 shadow-2xl flex flex-col items-center justify-center min-h-[380px]">
+            <div
+              class="w-16 h-16 bg-indigo-500/10 text-indigo-400 rounded-full flex items-center justify-center text-3xl border border-indigo-500/20">
               🔒
             </div>
             <div class="space-y-2">
-              <h3 class="text-2xl font-bold text-white">Lezione Gratuita per Iscritti</h3>
+              <h3 class="text-xl sm:text-2xl font-bold text-white">Lezione Gratuita per Iscritti</h3>
               <p class="text-slate-400 text-sm max-w-md mx-auto">
-                Crea un account gratuito per continuare a guardare tutte le lezioni del corso, tenere traccia dei tuoi progressi e partecipare alle discussioni.
+                Crea un account gratuito per continuare a guardare tutte le lezioni del corso, tenere traccia dei tuoi
+                progressi e partecipare alle discussioni.
               </p>
             </div>
-            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-2">
-              <a [routerLink]="['/register']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md">
+            <div class="flex flex-col sm:flex-row justify-center gap-4 pt-2 w-full sm:w-auto">
+              <a [routerLink]="['/register']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }"
+                 class="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition no-underline shadow-md text-center">
                 Registrati Gratis in 30 secondi
               </a>
-              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-6 rounded-xl text-sm transition no-underline border border-slate-700">
+              <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }"
+                 class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold py-3 px-6 rounded-xl text-sm transition no-underline border border-slate-700 text-center">
                 Ho già un account: Accedi
               </a>
             </div>
           </div>
-        }
+        } @else if (statoVisione === 'RIPRODUCI' && videoSelezionato) {
+          <div class="space-y-3 sm:space-y-4">
 
-        <!-- CASO 3: VIDEO RIPRODUCIBILE -->
-        @else if (statoVisione === 'RIPRODUCI' && videoSelezionato) {
-          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+            <!-- BARRA CONTROLLO UNICA: TOGGLE VIDEO, TITOLO E SPUNTA COMPLETATO -->
+            <div class="px-3 sm:px-0">
+              <div
+                class="p-2.5 sm:p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-2 shadow-md">
+                <button
+                  (click)="togglePlayer()"
+                  class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 flex items-center gap-1.5 shrink-0 transition cursor-pointer">
+                  <span>{{ mostraPlayer ? '🙈 Riduci Video' : '👁️ Mostra Video' }}</span>
+                </button>
 
-            <!-- PLAYER YOUTUBE CON SAFE URL PIPE -->
-            <div class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800">
-              <iframe
-                [src]="videoSelezionato.youtubeId | safeUrl"
-                class="w-full h-full"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-              </iframe>
+                <h2 class="text-xs sm:text-sm font-bold text-white tracking-tight truncate flex-1 min-w-0">
+                  {{ videoSelezionato.titolo }}
+                </h2>
+
+                @if (isLoggedIn) {
+                  <div class="flex items-center space-x-1.5 shrink-0 pl-1 border-l border-slate-800">
+                    <label for="completato-checkbox"
+                           class="text-[11px] sm:text-xs font-medium text-slate-300 cursor-pointer select-none">
+                      Fatta
+                    </label>
+                    <input
+                      id="completato-checkbox"
+                      type="checkbox"
+                      [checked]="currentVideoIsCompleted"
+                      (change)="toggleCompleto($event)"
+                      class="w-4 h-4 text-indigo-600 bg-slate-950 border-slate-700 rounded focus:ring-indigo-500 cursor-pointer"
+                    />
+                  </div>
+                }
+              </div>
             </div>
 
-            <div class="space-y-2">
-              <h2 class="text-2xl font-bold text-white tracking-tight">{{ videoSelezionato.titolo }}</h2>
-              <hr class="border-slate-800">
-              <p class="text-slate-300 text-sm leading-relaxed whitespace-pre-line">{{ videoSelezionato.descrizione }}</p>
+            <!-- TASTI DI NAVIGAZIONE RAPIDA: PRECEDENTE / SUCCESSIVA -->
+            <div class="px-3 sm:px-0 flex items-center justify-between gap-2">
+              <button
+                (click)="lezionePrecedente()"
+                [disabled]="!hasPrevious"
+                class="flex-1 py-2 px-3 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed border border-slate-800 rounded-xl text-xs font-medium text-slate-300 transition flex items-center justify-center gap-1.5 cursor-pointer shadow-sm">
+                <span>←</span>
+                <span>Precedente</span>
+              </button>
+
+              <button
+                (click)="lezioneSuccessiva(true)"
+                [disabled]="!hasNext"
+                class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-md">
+                <span>Prossima Lezione</span>
+                <span>→</span>
+              </button>
             </div>
 
-            <!-- AVANZAMENTO (SOLO UTENTI LOGGATI) -->
-            @if (isLoggedIn) {
-              <div class="mt-4 p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
-                <div>
-                  <h3 class="text-base font-semibold text-white">Stato della Lezione</h3>
-                  <p class="text-xs text-slate-400">Segna questo video come completato per aggiornare il tuo avanzamento.</p>
-                </div>
-
-                <div class="flex items-center space-x-3">
-                  <label for="completato-checkbox" class="text-sm font-medium text-slate-300 cursor-pointer select-none">
-                    Lezione Completata
-                  </label>
-                  <input
-                    id="completato-checkbox"
-                    type="checkbox"
-                    [checked]="videoIsCompleted"
-                    (change)="toggleCompleto($event)"
-                    class="w-5 h-5 text-indigo-600 bg-slate-900 border-slate-700 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer"
-                  />
-                </div>
+            <!-- PLAYER VIDEO -->
+            @if (mostraPlayer) {
+              <div
+                class="aspect-video w-full bg-black sm:rounded-2xl sm:overflow-hidden sm:border sm:border-slate-800 sm:shadow-xl transition-all">
+                <iframe
+                  [src]="videoSelezionato.youtubeId | safeUrl"
+                  class="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen>
+                </iframe>
               </div>
             }
 
             <!-- SEZIONE COMMENTI -->
-            <div class="mt-8 pt-4 border-t border-slate-800 space-y-4">
-              <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                Commenti ({{ listaCommenti.length }})
-              </h3>
+            @if (mostraPlayer) {
+              <div class="px-3 sm:px-0 pt-2">
+                <div class="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-md">
+                  <h3 class="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                    Commenti ({{ listaCommenti.length }})
+                  </h3>
 
-              @if (isLoggedIn) {
-                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-                  <label for="textareaCommento" class="block text-xs text-slate-400">
-                    Poni una domanda o lascia un feedback su questa lezione
-                  </label>
-                  <textarea
-                    id="textareaCommento"
-                    rows="3"
-                    class="w-full p-3 bg-slate-900 border border-slate-800 rounded-lg text-white text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
-                    placeholder="Scrivi qui il tuo commento..."
-                    [(ngModel)]="nuovoCommentoTesto">
-                  </textarea>
-                  <div class="flex justify-end">
-                    <button
-                      class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium py-2 px-5 rounded-lg text-sm transition cursor-pointer"
-                      (click)="aggiungiCommento()"
-                      [disabled]="!nuovoCommentoTesto.trim()">
-                      Pubblica
-                    </button>
+                  @if (isLoggedIn) {
+                    <div class="space-y-3">
+                      <textarea
+                        id="textareaCommento"
+                        rows="2"
+                        class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs sm:text-sm focus:outline-none focus:border-indigo-500 transition resize-none"
+                        placeholder="Poni una domanda o lascia un feedback..."
+                        [(ngModel)]="nuovoCommentoTesto">
+                      </textarea>
+                      <div class="flex justify-end">
+                        <button
+                          class="bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-white font-medium py-1.5 px-4 rounded-lg text-xs sm:text-sm transition cursor-pointer"
+                          (click)="aggiungiCommento()"
+                          [disabled]="!nuovoCommentoTesto.trim()">
+                          Pubblica
+                        </button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div
+                      class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-center text-xs sm:text-sm text-slate-400">
+                      <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }"
+                         class="text-indigo-400 hover:underline font-semibold">Accedi</a> per inviare commenti.
+                    </div>
+                  }
+
+                  <div class="space-y-2 pt-1">
+                    @if (listaCommenti.length === 0) {
+                      <div
+                        class="text-slate-500 text-center py-3 text-xs border border-dashed border-slate-800 rounded-xl">
+                        Nessun commento per questa lezione.
+                      </div>
+                    }
+
+                    @for (commento of listaCommenti; track commento.id) {
+                      <div
+                        [class]="commento.authorRole === 'ADMIN'
+                          ? 'p-3 bg-indigo-950/40 border-l-4 border-amber-400 rounded-r-xl space-y-1 border-y border-r border-slate-800'
+                          : 'p-3 bg-slate-950/60 border-l-2 border-indigo-500 rounded-r-xl space-y-1 border-y border-r border-slate-800/60'"
+                      >
+                        <div class="flex justify-between items-center text-[11px]">
+                          <div class="flex items-center gap-1.5">
+                            <span
+                              [class]="commento.authorRole === 'ADMIN' ? 'font-bold text-amber-400' : 'font-semibold text-indigo-400'">
+                              👤 {{ commento.authorName }}
+                            </span>
+
+                            @if (commento.authorRole === 'ADMIN') {
+                              <span
+                                class="text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.2 rounded font-bold uppercase tracking-wider">
+                                👑 Docente
+                              </span>
+                            } @else if (commento.authorRole === 'STORE') {
+                              <span
+                                class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.2 rounded font-bold uppercase">
+                                🏪 Store
+                              </span>
+                            } @else {
+                              <span
+                                class="text-[9px] bg-slate-800 text-slate-400 px-1.5 py-0.2 rounded font-mono uppercase">
+                                Studente
+                              </span>
+                            }
+                          </div>
+
+                          <div class="flex items-center gap-2">
+                            <span class="text-slate-500">
+                              {{ commento.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                            </span>
+
+                            @if (userRole === 'ADMIN' || commento.authorId === currentUserId) {
+                              <button
+                                (click)="eliminaCommento(commento.id)"
+                                title="Elimina commento"
+                                class="text-slate-500 hover:text-rose-400 transition cursor-pointer text-xs">
+                                🗑️
+                              </button>
+                            }
+                          </div>
+                        </div>
+
+                        <p class="text-slate-300 text-xs sm:text-sm whitespace-pre-line break-words pt-0.5">
+                          {{ commento.content }}
+                        </p>
+                      </div>
+                    }
                   </div>
                 </div>
-              } @else {
-                <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl text-center text-sm text-slate-400">
-                  <a [routerLink]="['/login']" [queryParams]="{ returnUrl: '/videolezioni/' + currentCourseId }" class="text-indigo-400 hover:underline font-semibold">Accedi</a> per porre domande e commentare le lezioni.
+              </div>
+            }
+
+          </div>
+        }
+
+      </div>
+
+      <!-- COLONNA LISTA LEZIONI -->
+      <div class="order-2 lg:order-1 space-y-3 px-3 sm:px-0 lg:max-h-[850px] lg:overflow-y-auto lg:pr-2">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="text-xs sm:text-sm font-semibold text-slate-400 uppercase tracking-wider">
+            Lezioni ({{ listaVideo.length }})
+          </h3>
+          <span class="text-xs text-indigo-400 font-mono">
+            Pag. {{ currentPage }} di {{ totalPages }}
+          </span>
+        </div>
+
+        @for (video of paginatedVideos; track video.youtubeId; let i = $index) {
+          <div
+            (click)="selezionaVideo(video)"
+            [ngClass]="videoSelezionato?.youtubeId === video.youtubeId ? 'border-indigo-500 bg-slate-800/60' : 'border-slate-800/80 bg-slate-900'"
+            class="p-3 sm:p-4 border rounded-xl cursor-pointer hover:border-indigo-500/50 transition flex items-start gap-3 relative shadow-sm"
+          >
+            <div class="relative shrink-0">
+              <img [src]="video.thumbnailUrl" class="w-20 h-12 sm:w-24 sm:h-14 object-cover rounded-lg bg-black"
+                   alt="Copertina">
+              @if (isCompleted(video)) {
+                <div
+                  class="absolute bottom-1 right-1 bg-emerald-500 text-slate-950 font-black text-[9px] rounded px-1 shadow">
+                  ✓
                 </div>
               }
+            </div>
 
-              <!-- LISTA COMMENTI -->
-              <div class="space-y-3">
-                @if (listaCommenti.length === 0) {
-                  <div class="text-slate-500 text-center py-6 text-sm border border-dashed border-slate-800 rounded-xl">
-                    Non ci sono ancora commenti per questa lezione.
-                  </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="text-white font-medium text-xs sm:text-sm truncate">{{ video.titolo }}</h4>
+              <p class="text-slate-400 text-[11px] truncate mt-0.5">{{ video.descrizione }}</p>
+
+              <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                @if (isCompleted(video)) {
+                  <span
+                    class="px-1.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[9px] font-bold uppercase rounded flex items-center gap-1">
+                    ✓ Fatta
+                  </span>
                 }
 
-                @for (commento of listaCommenti; track commento.id) {
-                  <div class="p-4 bg-slate-950/40 border-l-4 border-indigo-500 border-y border-r border-slate-800 rounded-r-xl space-y-2">
-                    <div class="flex justify-between items-center text-xs">
-                      <span class="font-semibold text-indigo-400 flex items-center gap-1">
-                        👤 {{ commento.authorName }}
-                        <span class="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-slate-400 font-mono uppercase ml-1">
-                          {{ commento.authorRole }}
-                        </span>
-                      </span>
-                      <span class="text-slate-500">
-                        {{ commento.createdAt | date:'dd/MM/yyyy HH:mm' }}
-                      </span>
-                    </div>
-
-                    <p class="text-slate-300 text-sm whitespace-pre-line break-words">
-                      {{ commento.content }}
-                    </p>
-                  </div>
+                @if (video.premium) {
+                  <span
+                    class="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[9px] font-bold uppercase rounded">
+                    👑 Premium
+                  </span>
+                } @else if ((currentPage === 1) && (i === 0)) {
+                  <span
+                    class="px-1.5 py-0.5 bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[9px] font-bold uppercase rounded">
+                    🎬 Anteprima
+                  </span>
+                } @else {
+                  <span
+                    class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 text-slate-300 text-[9px] font-bold uppercase rounded">
+                    Lez. {{ (currentPage - 1) * pageSize + i + 1 }}
+                  </span>
                 }
               </div>
             </div>
+          </div>
+        }
 
+        @if (totalPages > 1) {
+          <div class="flex items-center justify-between pt-3 pb-6 border-t border-slate-800/80">
+            <button
+              (click)="cambiaPagina(currentPage - 1)"
+              [disabled]="currentPage === 1"
+              class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition">
+              ← Precedenti
+            </button>
+
+            <span class="text-xs text-slate-400 font-medium">
+              {{ currentPage }} / {{ totalPages }}
+            </span>
+
+            <button
+              (click)="cambiaPagina(currentPage + 1)"
+              [disabled]="currentPage === totalPages"
+              class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition">
+              Successivi →
+            </button>
           </div>
         }
       </div>
 
     </div>
+
+    <!-- MODALE QUIZ INTERATTIVO (POPUP OVERLAY) -->
+    @if (isQuizOpen && quizData) {
+      <div class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
+
+          <!-- Intestazione Modal -->
+          <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+            <div>
+              <h3 class="text-lg font-bold text-white">{{ quizData.title }}</h3>
+              <p class="text-xs text-slate-400">Punteggio minimo richiesto: {{ quizData.passingScore }}%</p>
+            </div>
+            <button (click)="chiudiQuiz()" class="text-slate-400 hover:text-white text-lg cursor-pointer">✕</button>
+          </div>
+
+          <!-- Schermata Risultato -->
+          Sostituisci il blocco `@if (quizResult) { ... }` in **`videolezioni.html`** con questa versione, che aggiunge il pulsante di download del certificato solo in caso di esito positivo:
+          @if (quizResult) {
+            <div [class]="quizResult.passed ? 'p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center space-y-3' : 'p-6 bg-rose-500/10 border border-rose-500/20 rounded-xl text-center space-y-3'">
+              <div class="text-4xl">{{ quizResult.passed ? '🎉' : '❌' }}</div>
+              <h4 class="text-lg font-bold" [class]="quizResult.passed ? 'text-emerald-400' : 'text-rose-400'">
+                Punteggio: {{ quizResult.score }}%
+              </h4>
+              <p class="text-sm text-slate-300">{{ quizResult.message }}</p>
+
+              <div class="pt-2 flex flex-wrap justify-center gap-3">
+                @if (quizResult.passed) {
+                  <button
+                    (click)="scaricaCertificato()"
+                    class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-md">
+                    <span>🎓</span>
+                    <span>Scarica Certificato PDF</span>
+                  </button>
+                }
+
+                <button (click)="apriQuiz()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold cursor-pointer">
+                  Ripeti Test
+                </button>
+                <button (click)="chiudiQuiz()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold cursor-pointer">
+                  Chiudi
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- Lista Domande e Scelte -->
+            <div class="space-y-6">
+              @for (domanda of quizData.questions; track domanda.id; let i = $index) {
+                <div class="space-y-3 bg-slate-950/50 p-4 rounded-xl border border-slate-800/80">
+                  <h4 class="text-sm font-semibold text-white">{{ i + 1 }}. {{ domanda.questionText }}</h4>
+                  <div class="space-y-2">
+                    @for (opzione of domanda.options; track opzione.id) {
+                      <label class="flex items-center gap-3 p-2.5 rounded-lg border border-slate-800 hover:bg-slate-800/50 transition cursor-pointer">
+                        <input
+                          type="radio"
+                          [name]="'q_' + domanda.id"
+                          [value]="opzione.id"
+                          (change)="selezionaRisposta(domanda.id, opzione.id)"
+                          [checked]="quizAnswers[domanda.id] === opzione.id"
+                          class="text-indigo-600 bg-slate-900 border-slate-700 focus:ring-indigo-500" />
+                        <span class="text-xs text-slate-300">{{ opzione.optionText }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Bottoni di Invio -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+              <button (click)="chiudiQuiz()" class="px-4 py-2 bg-slate-800 text-slate-300 hover:bg-slate-700 rounded-xl text-xs font-semibold cursor-pointer">
+                Annulla
+              </button>
+              <button
+                (click)="inviaQuiz()"
+                [disabled]="isSubmittingQuiz"
+                class="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer">
+                {{ isSubmittingQuiz ? 'Valutazione in corso...' : 'Invia Risposte' }}
+              </button>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
   </div>
 </div>

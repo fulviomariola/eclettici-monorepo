@@ -51,6 +51,27 @@ export class AuthService {
   }
 
   /**
+   * Verifica se l'utente ha un token di sessione valido nel localStorage
+   */
+  isLoggedIn(): boolean {
+    return !!localStorage.getItem('token');
+  }
+
+  /**
+   * Ritorna il ruolo dell'utente corrente (es. 'USER', 'STORE', 'ADMIN')
+   */
+  getUserRole(): string | null {
+    return localStorage.getItem('user_role');
+  }
+
+  /**
+   * Ritorna l'identificativo UUID dell'utente corrente
+   */
+  getUserId(): string | null {
+    return localStorage.getItem('user_id');
+  }
+
+  /**
    * Metodo da chiamare subito dopo il login per aggiornare lo stato e avviare il timer
    */
   aggiornaStatoSessione(): void {
@@ -80,7 +101,6 @@ export class AuthService {
 
       const payload = JSON.parse(atob(payloadBase64));
       const tempoRimanenteMs = (payload.exp * 1000) - Date.now();
-      //const tempoRimanenteMs = 15000;
 
       if (tempoRimanenteMs > 0) {
         this.timerScadenza = setTimeout(() => {
@@ -88,7 +108,6 @@ export class AuthService {
           void this.router.navigate(['/login']);
         }, tempoRimanenteMs);
       } else {
-        // Se il token è già scaduto
         this.logout();
         void this.router.navigate(['/login']);
       }

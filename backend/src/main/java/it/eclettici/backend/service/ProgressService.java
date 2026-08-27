@@ -35,8 +35,16 @@ public class ProgressService {
     @Transactional(readOnly = true)
     public boolean checkVideoCompletato(UUID userId, Long videoId) {
         return progressRepository.findByUserIdAndVideoId(userId, videoId)
-                .map(Progress::getCompleted) // Utilizza il getter corretto della tua entità
-                .orElse(false); // Se non esiste il record, il video non è completato
+                .map(Progress::getCompleted)
+                .orElse(false);
+    }
+
+    /**
+     * Recupera la lista degli ID video completati da un utente per uno specifico corso.
+     */
+    @Transactional(readOnly = true)
+    public List<String> getCompletedLessonsByCourse(UUID userId, Long courseId) {
+        return progressRepository.findCompletedVideoIdsByUserIdAndCourseId(userId, courseId);
     }
 
     /**
@@ -44,14 +52,12 @@ public class ProgressService {
      */
     @Transactional
     public Progress aggiornaProgresso(UUID userId, Long videoId, Boolean completato) {
-        // Cerca se esiste già un record di progresso per questa coppia utente-video
         return progressRepository.findByUserIdAndVideoId(userId, videoId)
                 .map(progress -> {
                     progress.setCompleted(completato);
                     return progressRepository.save(progress);
                 })
                 .orElseGet(() -> {
-                    // Se non esiste, recuperiamo le entità e creiamo un nuovo record
                     Progress nuovoProgresso = new Progress();
 
                     User user = userRepository.findById(userId)
@@ -69,7 +75,6 @@ public class ProgressService {
 
     /**
      * Calcola la percentuale di completamento dei video totali per un utente.
-     * Ritorna un valore intero compreso tra 0 e 100.
      */
     @Transactional(readOnly = true)
     public int calcolaPercentualeAvanzamento(UUID userId) {
@@ -80,12 +85,10 @@ public class ProgressService {
 
         List<Progress> progressiUtente = progressRepository.findByUserId(userId);
 
-        // Contiamo quanti video hanno il flag isCompleted impostato su true
         long videoCompletati = progressiUtente.stream()
                 .filter(Progress::getCompleted)
                 .count();
 
-        // Formula matematica per calcolare la percentuale intera
         return (int) ((videoCompletati * 100) / totalVideo);
     }
 }

@@ -20,6 +20,36 @@ export class GestioneVideoComponent {
   isError: boolean = false;
 
   onSyncPlaylist(): void {
+    let rawInput = this.playlistIdInput.trim();
+    if (!rawInput) {
+      this.showFeedback('Inserisci un ID o URL playlist valido.', true);
+      return;
+    }
+
+    // Estrae automaticamente l'ID se l'utente incolla l'URL completo di YouTube
+    const match = rawInput.match(/[?&]list=([^#&?]+)/);
+    const cleanPlaylistId = match ? match[1] : rawInput;
+
+    this.isSubmitting = true;
+    this.feedbackMessage = "Sincronizzazione in corso... Attendere.";
+    this.isError = false;
+    this.cdr.detectChanges();
+
+    this.videoService.syncPlaylist(cleanPlaylistId).subscribe({
+      next: (response) => {
+        this.isSubmitting = false;
+        this.showFeedback(response.message || 'Playlist sincronizzata con successo!', false);
+        this.playlistIdInput = '';
+      },
+      error: (err) => {
+        this.isSubmitting = false;
+        const errorMessage = err.error?.message || (typeof err.error === 'string' ? err.error : `Errore di sincronizzazione (${err.status})`);
+        this.showFeedback(errorMessage, true);
+      }
+    });
+  }
+
+/*  onSyncPlaylist(): void {
     if (!this.playlistIdInput.trim()) {
       this.showFeedback('Inserisci un ID o URL playlist valido.', true);
       return;
@@ -43,7 +73,7 @@ export class GestioneVideoComponent {
         this.showFeedback(errorMessage, true);
       }
     });
-  }
+  }*/
 
   // Modello legato al Form di inserimento manuale singolo video
   nuovoVideo: VideoDto = {

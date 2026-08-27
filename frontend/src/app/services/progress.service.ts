@@ -8,16 +8,21 @@ import { API_BASE_URL } from '../config/api.config';
 })
 export class ProgressService {
 
- private apiUrl = `${API_BASE_URL}/progress`;
-
+  private apiUrl = `${API_BASE_URL}/progress`;
 
   constructor(private http: HttpClient) { }
+
+  /**
+   * Recupera l'elenco degli ID delle lezioni completate per un determinato corso.
+   */
+  getCompletedLessons(courseId: number): Observable<string[]> {
+    return this.http.get<string[]>(`${this.apiUrl}/course/${courseId}`);
+  }
 
   /**
    * Aggiorna lo stato di completamento di un video per l'utente loggato.
    */
   aggiornaProgresso(videoId: number, completato: boolean): Observable<any> {
-    // Genera l'URL includendo il parametro ?completato=true/false
     return this.http.post<any>(`${this.apiUrl}/video/${videoId}?completato=${completato}`, {});
   }
 

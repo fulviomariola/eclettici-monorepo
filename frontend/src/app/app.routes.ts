@@ -11,6 +11,7 @@ import { GestioneVideoComponent } from './components/gestione-video/gestione-vid
 import { CatalogoCorsiComponent } from './components/catalogo-corsi/catalogo-corsi';
 import { VideolezioniComponent } from './components/videolezioni/videolezioni';
 import { CosaMiHaPortatoQui } from './components/cosaMiHaPortatoQui/cosa-mi-ha-portato-qui';
+import { VerificaCertificatoComponent } from './components/verifica-certificato/verifica-certificato.component';
 
 export const routes: Routes = [
   { path: '', component: HomeComponent },
@@ -20,6 +21,8 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'youtube', component: YoutubeComponent },
   { path: 'github', component: GithubComponent },
+  { path: 'verifica-certificato/:attemptId',
+    loadComponent: () => import('./components/verifica-certificato/verifica-certificato.component').then(m => m.VerificaCertificatoComponent) },
 
   // Rotta riservata esclusivamente ad ADMIN
   {

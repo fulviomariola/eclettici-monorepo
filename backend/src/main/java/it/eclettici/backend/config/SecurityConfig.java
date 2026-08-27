@@ -59,6 +59,8 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/contacts").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/email/subscribe").permitAll()
 
+                        .requestMatchers(HttpMethod.GET, "/api/certificates/verify/**").permitAll()
+
                         // Permessi dei corsi
                         .requestMatchers("/api/courses/**").permitAll()
 
@@ -106,6 +108,7 @@ public class SecurityConfig {
                 "https://*.eclettici.it",
                 "http://localhost:4200",
                 "http://localhost:*",
+                "http://172.20.10.*:4200",
                 "http://192.168.1.*:4200"
         ));
 

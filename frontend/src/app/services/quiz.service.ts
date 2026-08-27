@@ -1,0 +1,82 @@
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { API_BASE_URL } from '../config/api.config';
+
+export interface QuizOption {
+  id: number;
+  optionText: string;
+}
+
+export interface QuizQuestion {
+  id: number;
+  questionText: string;
+  options: QuizOption[];
+}
+
+export interface QuizDto {
+  id: number;
+  title: string;
+  passingScore: number;
+  questions: QuizQuestion[];
+}
+
+export interface QuizResultDto {
+  score: number;
+  passed: boolean;
+  passingScore: number;
+  message: string;
+}
+
+export interface UserCertificateDto {
+  attemptId: number;
+  courseId: number;
+  courseTitle: string;
+  score: number;
+  issuedAt: string;
+}
+
+export interface CertificateVerifyDto {
+  attemptId: number;
+  studentName: string;
+  courseTitle: string;
+  score: number;
+  passed: boolean;
+  issuedAt: string;
+}
+
+@Injectable({
+  providedIn: 'root'
+})
+export class QuizService {
+  private http = inject(HttpClient);
+  private apiUrl = `${API_BASE_URL}/quizzes`;
+  private certificateUrl = `${API_BASE_URL}/certificates`;
+
+  private httpOptions = {
+    withCredentials: true
+  };
+
+  getQuizByCourse(courseId: number): Observable<QuizDto> {
+    return this.http.get<QuizDto>(`${this.apiUrl}/course/${courseId}`);
+  }
+
+  submitQuiz(quizId: number, answers: { questionId: number; selectedOptionId: number }[]): Observable<QuizResultDto> {
+    return this.http.post<QuizResultDto>(`${this.apiUrl}/${quizId}/submit`, { answers }, this.httpOptions);
+  }
+
+  scaricaCertificato(courseId: number): Observable<Blob> {
+    return this.http.get(`${this.certificateUrl}/course/${courseId}/download`, {
+      responseType: 'blob',
+      withCredentials: true
+    });
+  }
+
+  getUserCertificates(): Observable<UserCertificateDto[]> {
+    return this.http.get<UserCertificateDto[]>(`${this.certificateUrl}/my-certificates`, this.httpOptions);
+  }
+
+  verifyCertificate(attemptId: number): Observable<CertificateVerifyDto> {
+    return this.http.get<CertificateVerifyDto>(`${this.certificateUrl}/verify/${attemptId}`);
+  }
+}

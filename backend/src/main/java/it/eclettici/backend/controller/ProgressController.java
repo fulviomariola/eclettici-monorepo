@@ -9,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +26,23 @@ public class ProgressController {
     }
 
     /**
+     * Endpoint per ottenere la lista dei video completati dall'utente per un intero corso.
+     * URL: GET http://localhost:8082/api/progress/course/{courseId}
+     */
+    @GetMapping("/course/{courseId}")
+    @PreAuthorize("hasAnyRole('STUDENT', 'STORE', 'ADMIN')")
+    public ResponseEntity<List<String>> getCompletedLessonsByCourse(
+            @PathVariable Long courseId,
+            Authentication authentication) {
+
+        User principale = (User) authentication.getPrincipal();
+        UUID userId = principale.getId();
+
+        List<String> videoCompletati = progressService.getCompletedLessonsByCourse(userId, courseId);
+        return ResponseEntity.ok(videoCompletati);
+    }
+
+    /**
      * Endpoint per ottenere lo stato di completamento di un singolo video per l'utente autenticato.
      * URL: GET http://localhost:8082/api/progress/video/{videoId}
      */
@@ -34,9 +52,7 @@ public class ProgressController {
         User principale = (User) authentication.getPrincipal();
         UUID userId = principale.getId();
 
-        // Chiamata al servizio per verificare lo stato
         boolean isCompleted = progressService.checkVideoCompletato(userId, videoId);
-
         return ResponseEntity.ok(Map.of("isCompleted", isCompleted));
     }
 
@@ -51,9 +67,6 @@ public class ProgressController {
             @RequestParam Boolean completato,
             Authentication authentication) {
 
-        // Estraiamo l'ID dell'utente autenticato (assicurati che il tuo CustomUserDetails ritorni l'oggetto User o il suo ID)
-        // Se nel tuo JwtAuthenticationFilter metti l'ID come username o nel Principal, adattalo di conseguenza.
-        // Assumiamo qui di poter estrarre l'ID dell'utente dal Principal o dal tuo oggetto User.
         User principale = (User) authentication.getPrincipal();
         UUID userId = principale.getId();
 
@@ -77,7 +90,6 @@ public class ProgressController {
         UUID userId = principale.getId();
 
         int percentuale = progressService.calcolaPercentualeAvanzamento(userId);
-
         return ResponseEntity.ok(Map.of("percentuale", percentuale));
     }
 }
