@@ -16,6 +16,7 @@ import it.eclettici.backend.repository.CourseRepository;
 import it.eclettici.backend.repository.QuizAttemptRepository;
 import it.eclettici.backend.repository.QuizRepository;
 import it.eclettici.backend.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +32,9 @@ public class CertificateService {
     private final QuizAttemptRepository quizAttemptRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
+
+    @Value("${app.frontend.url:http://localhost:4200}")
+    private String frontendBaseUrl;
 
     public CertificateService(QuizRepository quizRepository,
                               QuizAttemptRepository quizAttemptRepository,
@@ -162,8 +166,8 @@ public class CertificateService {
             document.add(line);
 
             // Generazione Immagine QR Code per la verifica
-            String verifyUrl = "http://localhost:4200/verifica-certificato/" + attempt.getId();
-            byte[] qrBytes = generateQrCodeImage(verifyUrl, 85, 85);
+            String verifyUrl = frontendBaseUrl + "/verifica-certificato/" + attempt.getId();
+            byte[] qrBytes = generateQrCodeImage(verifyUrl, 95, 95);
             Image qrImage = Image.getInstance(qrBytes);
             qrImage.setAlignment(Element.ALIGN_CENTER);
             qrImage.setSpacingBefore(5);
