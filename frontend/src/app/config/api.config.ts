@@ -7,3 +7,8 @@ const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname
 export const API_BASE_URL = isLocal
   ? `http://${hostname}:8082/api`
   : `https://${hostname}/api`;
+
+export const environment = {
+  production: true,
+  apiUrl: 'https://test.eclettici.it/api' // Oppure il sottodominio/porta effettivo del tuo backend
+};

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { QuizService, CertificateVerifyDto } from '../../services/quiz.service';
@@ -63,6 +63,7 @@ import { QuizService, CertificateVerifyDto } from '../../services/quiz.service';
 export class VerificaCertificatoComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private quizService = inject(QuizService);
+  private cdr = inject(ChangeDetectorRef);
 
   isLoading = true;
   certificateInfo: CertificateVerifyDto | null = null;
@@ -74,14 +75,18 @@ export class VerificaCertificatoComponent implements OnInit {
         next: (res) => {
           this.certificateInfo = res;
           this.isLoading = false;
+          this.cdr.detectChanges();
         },
-        error: () => {
+        error: (err) => {
+          console.error('Errore durante la verifica del certificato:', err);
           this.certificateInfo = null;
           this.isLoading = false;
+          this.cdr.detectChanges();
         }
       });
     } else {
       this.isLoading = false;
+      this.cdr.detectChanges();
     }
   }
 }

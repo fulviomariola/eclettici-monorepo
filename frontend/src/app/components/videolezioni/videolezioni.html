@@ -391,7 +391,6 @@
           </div>
 
           <!-- Schermata Risultato -->
-          Sostituisci il blocco `@if (quizResult) { ... }` in **`videolezioni.html`** con questa versione, che aggiunge il pulsante di download del certificato solo in caso di esito positivo:
           @if (quizResult) {
             <div [class]="quizResult.passed ? 'p-6 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-center space-y-3' : 'p-6 bg-rose-500/10 border border-rose-500/20 rounded-xl text-center space-y-3'">
               <div class="text-4xl">{{ quizResult.passed ? '🎉' : '❌' }}</div>
