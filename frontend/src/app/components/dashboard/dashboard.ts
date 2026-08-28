@@ -54,6 +54,9 @@ export class DashboardComponent implements OnInit {
 
   @ViewChild(CommunityBoardComponent) communityBoard!: CommunityBoardComponent;
 
+  // Ente emittente modificabile
+  readonly organizationName: string = 'Eclettici';
+
   userEmail: string | null = '';
   currentUserId: string = '';
   userRole: string = '';
@@ -73,6 +76,7 @@ export class DashboardComponent implements OnInit {
   // Dati Certificati Conseguiti
   listaCertificati: UserCertificateDto[] = [];
   isLoadingCertificati: boolean = true;
+  copiedAttemptId: number | null = null;
 
   ngOnInit(): void {
     this.userEmail = localStorage.getItem('user_email');
@@ -180,6 +184,38 @@ export class DashboardComponent implements OnInit {
         window.URL.revokeObjectURL(url);
       },
       error: (err) => console.error('Errore durante il download del certificato:', err)
+    });
+  }
+
+  // Costruzione URL ufficiale LinkedIn "Aggiungi a Licenze e Certificazioni"
+  getLinkedInUrl(cert: UserCertificateDto): string {
+    const certDate = cert.issuedAt ? new Date(cert.issuedAt) : new Date();
+    const issueYear = certDate.getFullYear();
+    const issueMonth = certDate.getMonth() + 1;
+    const verifyUrl = `${window.location.origin}/verifica-certificato/${cert.attemptId}`;
+
+    const params = new URLSearchParams({
+      startTask: 'CERTIFICATION_NAME',
+      name: cert.courseTitle,
+      organizationName: this.organizationName,
+      issueYear: issueYear.toString(),
+      issueMonth: issueMonth.toString(),
+      certUrl: verifyUrl,
+      certId: cert.attemptId.toString()
+    });
+
+    return `https://www.linkedin.com/profile/add?${params.toString()}`;
+  }
+
+  copiaLinkVerifica(attemptId: number): void {
+    const url = `${window.location.origin}/verifica-certificato/${attemptId}`;
+    void navigator.clipboard.writeText(url).then(() => {
+      this.copiedAttemptId = attemptId;
+      this.cdr.detectChanges();
+      setTimeout(() => {
+        this.copiedAttemptId = null;
+        this.cdr.detectChanges();
+      }, 2500);
     });
   }
 

@@ -120,14 +120,14 @@
       }
     </div>
 
-    <!-- SEZIONE: I MIEI CERTIFICATI -->
+    <!-- SEZIONE: I MIEI CERTIFICATI & BADGE LINKEDIN -->
     <div class="mb-10 bg-slate-950/40 border border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <div>
           <h2 class="text-lg font-bold text-white flex items-center gap-2">
             <span>🎓</span> I Miei Certificati Ufficiali ({{ listaCertificati.length }})
           </h2>
-          <p class="text-xs text-slate-400">Attestati conseguiti al superamento dei test finali</p>
+          <p class="text-xs text-slate-400">Attestati conseguiti e condivisione su profili professionali</p>
         </div>
       </div>
 
@@ -138,27 +138,53 @@
       } @else if (listaCertificati.length > 0) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           @for (cert of listaCertificati; track cert.attemptId) {
-            <div class="p-4 bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-xl flex items-center justify-between gap-3 transition shadow-sm">
-              <div class="space-y-1 min-w-0">
+            <div class="p-5 bg-slate-900 border border-slate-800 hover:border-indigo-500/30 rounded-xl flex flex-col justify-between gap-4 transition shadow-sm">
+              <div class="space-y-1">
                 <h4 class="text-sm font-semibold text-white truncate">{{ cert.courseTitle }}</h4>
                 <div class="text-[11px] text-slate-400 flex items-center gap-2">
                   <span>Data: {{ cert.issuedAt | date:'dd/MM/yyyy' }}</span>
                   <span>•</span>
-                  <span class="text-emerald-400 font-bold">Voto: {{ cert.score }}%</span>
+                  <span class="text-emerald-400 font-bold">Punteggio: {{ cert.score }}%</span>
+                  <span>•</span>
+                  <span class="font-mono text-indigo-400">#{{ cert.attemptId }}</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-2 shrink-0">
-                <a [routerLink]="['/verifica-certificato', cert.attemptId]"
-                   class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition no-underline"
-                   title="Verifica pubblicamente">
-                  🔍
-                </a>
+              <!-- BARRA AZIONI: DOWNLOAD, LINKEDIN, CONDIVISIONE -->
+              <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/80">
+                <!-- Download PDF -->
                 <button
                   (click)="scaricaCertificato(cert.courseId)"
                   class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-sm">
                   <span>📥 PDF</span>
                 </button>
+
+                <!-- Aggiungi a LinkedIn -->
+                <a
+                  [href]="getLinkedInUrl(cert)"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="px-3 py-1.5 bg-[#0A66C2] hover:bg-[#004182] text-white rounded-lg text-xs font-semibold transition flex items-center gap-1.5 no-underline shadow-sm">
+                  <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.46 10.9v8.37H9.2V10.9H6.46M7.83 6.45a1.6 1.6 0 1 0 0 3.2 1.6 1.6 0 0 0 0-3.2Z"/>
+                  </svg>
+                  <span>LinkedIn</span>
+                </a>
+
+                <!-- Copia Link Verifica -->
+                <button
+                  (click)="copiaLinkVerifica(cert.attemptId)"
+                  class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition cursor-pointer"
+                  [title]="copiedAttemptId === cert.attemptId ? 'Link copiato!' : 'Copia link verifica'">
+                  {{ copiedAttemptId === cert.attemptId ? '✓ Copiato!' : '🔗 Link' }}
+                </button>
+
+                <!-- Pagina di Verifica -->
+                <a [routerLink]="['/verifica-certificato', cert.attemptId]"
+                   class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-medium transition no-underline"
+                   title="Visualizza pagina pubblica di verifica">
+                  🔍
+                </a>
               </div>
             </div>
           }

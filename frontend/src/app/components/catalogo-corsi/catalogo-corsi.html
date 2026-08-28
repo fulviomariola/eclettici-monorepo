@@ -14,7 +14,6 @@
     <!-- BARRA DI RICERCA E FILTRI RAPIDI -->
     @if (!isLoading && listaCorsi.length > 0) {
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <!-- Campo di Ricerca Testuale -->
         <div class="relative w-full sm:w-80">
           <input
             type="text"
@@ -31,7 +30,6 @@
           }
         </div>
 
-        <!-- Pulsanti Filtro Categoria -->
         <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-800 p-1 rounded-xl w-full sm:w-auto justify-center">
           <button
             (click)="impostaFiltro('TUTTI')"
@@ -75,7 +73,7 @@
           <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl hover:border-indigo-500/50 transition-all flex flex-col justify-between group">
 
             <div>
-              <!-- COPERTINA CON OVERLAY BADGE E PROGRESSO -->
+              <!-- COPERTINA CON OVERLAY BADGE E VALUTAZIONI -->
               <div class="relative aspect-video bg-black overflow-hidden">
                 <img
                   [src]="corso.thumbnailUrl || 'https://img.youtube.com/vi/cUrqAAkx5vo/hqdefault.jpg'"
@@ -93,6 +91,16 @@
                       🆓 Gratis
                     </span>
                   }
+                </div>
+
+                <!-- BADGE RATING MEDIO -->
+                <div class="absolute top-3 right-3">
+                  <span class="px-2 py-1 bg-slate-950/85 backdrop-blur text-amber-400 text-xs font-bold rounded-md border border-slate-800 shadow flex items-center gap-1">
+                    ★ {{ getRating(corso.id).average > 0 ? getRating(corso.id).average : 'Nuovo' }}
+                    @if (getRating(corso.id).total > 0) {
+                      <span class="text-slate-400 font-normal text-[10px]">({{ getRating(corso.id).total }})</span>
+                    }
+                  </span>
                 </div>
 
                 <div class="absolute bottom-3 right-3">
@@ -155,7 +163,7 @@
       </div>
     }
 
-    <!-- NESSUN CORSO TROVATO (FILTRO O VUOTO) -->
+    <!-- NESSUN CORSO TROVATO -->
     @if (!isLoading && corsiFiltrati.length === 0) {
       <div class="text-center py-16 text-slate-500 border border-dashed border-slate-800 rounded-2xl space-y-2">
         <p class="text-sm font-medium">Nessun percorso formativo trovato con i filtri attuali.</p>

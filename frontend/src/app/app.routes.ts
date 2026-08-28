@@ -21,15 +21,23 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'youtube', component: YoutubeComponent },
   { path: 'github', component: GithubComponent },
-  { path: 'verifica-certificato/:attemptId',
-    loadComponent: () => import('./components/verifica-certificato/verifica-certificato.component').then(m => m.VerificaCertificatoComponent) },
+  {
+    path: 'verifica-certificato/:attemptId',
+    loadComponent: () => import('./components/verifica-certificato/verifica-certificato.component').then(m => m.VerificaCertificatoComponent)
+  },
 
-  // Rotta riservata esclusivamente ad ADMIN
+  // Rotte riservate esclusivamente ad ADMIN
   {
     path: 'gestione-video',
     component: GestioneVideoComponent,
     canActivate: [authGuard],
-    data: { roles: ['ADMIN'] } // <-- Aggiunto vincolo di ruolo
+    data: { roles: ['ADMIN'] }
+  },
+  {
+    path: 'gestione-quiz',
+    loadComponent: () => import('./components/gestione-quiz/gestione-quiz.component').then(m => m.GestioneQuizComponent),
+    canActivate: [authGuard],
+    data: { roles: ['ADMIN'] }
   },
 
   { path: 'cosa-mi-ha-portato-qui', component: CosaMiHaPortatoQui },

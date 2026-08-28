@@ -2,14 +2,15 @@ import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
-import { CourseService } from '../../services/course.service';
+import { CourseService, CourseRatingSummaryDto, CourseReviewDto } from '../../services/course.service';
 import { VideoDto } from '../../models/video';
 import { SafeUrlPipe } from '../../pipes/safe-url.pipe';
 import { ProgressService } from '../../services/progress.service';
 import { CommentService } from '../../services/comment';
 import { CommentResponseDto } from '../../models/comment';
 import { PurchaseService } from '../../services/purchase.service';
-import {QuizService, QuizDto, QuizResultDto} from '../../services/quiz.service';
+import { QuizService, QuizDto, QuizResultDto } from '../../services/quiz.service';
+import { ProjectService, ProjectSubmissionDto } from '../../services/project.service';
 
 export type StatoVisione = 'RIPRODUCI' | 'BLOCCO_LOGIN_GRATIS' | 'BLOCCO_PREMIUM';
 
@@ -27,6 +28,7 @@ export class VideolezioniComponent implements OnInit {
   private purchaseService = inject(PurchaseService);
   private cdr = inject(ChangeDetectorRef);
   private quizService = inject(QuizService);
+  private projectService = inject(ProjectService);
 
   currentCourseId: number | null = null;
   listaVideo: VideoDto[] = [];
@@ -45,22 +47,127 @@ export class VideolezioniComponent implements OnInit {
   mostraPlayer: boolean = true;
   currentUserId: string = '';
 
+  // Gestione Quiz
   quizData: QuizDto | null = null;
   quizAnswers: { [questionId: number]: number } = {};
   quizResult: QuizResultDto | null = null;
   isQuizOpen: boolean = false;
   isSubmittingQuiz: boolean = false;
 
-  caricaQuiz(courseId: number): void {
-    console.log('🚀 Avvio richiesta Quiz per corso ID:', courseId);
-    this.quizService.getQuizByCourse(courseId).subscribe({
-      next: (quiz) => {
-        console.log('✅ Risposta Quiz dal Server:', quiz);
-        this.quizData = quiz;
+  // Gestione Recensioni
+  ratingSummary: CourseRatingSummaryDto = { averageRating: 0, totalReviews: 0, reviews: [] };
+  selectedRating: number = 5;
+  reviewComment: string = '';
+  isSubmittingReview: boolean = false;
+  reviewSuccessMessage: string | null = null;
+
+  // Gestione Consegna Progetto Pratico
+  mySubmission: ProjectSubmissionDto | null = null;
+  repoUrlInput: string = '';
+  projectNotesInput: string = '';
+  isSubmittingProject: boolean = false;
+  projectMessage: string | null = null;
+
+  ngOnInit(): void {
+    const token = localStorage.getItem('token') || localStorage.getItem('jwt');
+
+    this.currentUserId = localStorage.getItem('user_id') || '';
+    this.isLoggedIn = !!token;
+    this.userRole = localStorage.getItem('user_role');
+
+    this.route.paramMap.subscribe(params => {
+      const courseIdParam = params.get('courseId');
+      if (courseIdParam) {
+        this.currentCourseId = Number(courseIdParam);
+        this.verificaAcquistoECaricaVideo(this.currentCourseId);
+        this.caricaQuiz(this.currentCourseId);
+        this.caricaRecensioni(this.currentCourseId);
+        if (this.isLoggedIn) {
+          this.caricaProgettoInviato(this.currentCourseId);
+        }
+      }
+    });
+  }
+
+  caricaProgettoInviato(courseId: number): void {
+    this.projectService.getMySubmission(courseId).subscribe({
+      next: (sub) => {
+        this.mySubmission = sub;
+        if (sub) {
+          this.repoUrlInput = sub.repoUrl;
+          this.projectNotesInput = sub.notes;
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  inviaProgetto(): void {
+    if (!this.currentCourseId || !this.repoUrlInput.trim() || this.isSubmittingProject) return;
+
+    this.isSubmittingProject = true;
+    this.projectMessage = null;
+
+    this.projectService.submitProject(this.currentCourseId, this.repoUrlInput, this.projectNotesInput).subscribe({
+      next: (saved) => {
+        this.mySubmission = saved;
+        this.isSubmittingProject = false;
+        this.projectMessage = 'Progetto inviato con successo! È in attesa di revisione da parte del docente.';
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('❌ Errore HTTP chiamata Quiz:', err);
+        console.error('Errore durante l\'invio del progetto:', err);
+        this.isSubmittingProject = false;
+        this.projectMessage = 'Errore durante l\'invio del progetto.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  caricaRecensioni(courseId: number): void {
+    this.courseService.getCourseReviews(courseId).subscribe({
+      next: (summary) => {
+        this.ratingSummary = summary;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
+  }
+
+  setRating(stars: number): void {
+    this.selectedRating = stars;
+  }
+
+  inviaRecensione(): void {
+    if (!this.currentCourseId || !this.isLoggedIn || this.isSubmittingReview) return;
+
+    this.isSubmittingReview = true;
+    this.reviewSuccessMessage = null;
+
+    this.courseService.submitCourseReview(this.currentCourseId, this.selectedRating, this.reviewComment).subscribe({
+      next: () => {
+        this.isSubmittingReview = false;
+        this.reviewSuccessMessage = 'Grazie per la tua recensione!';
+        this.reviewComment = '';
+        this.caricaRecensioni(this.currentCourseId!);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Errore invio recensione:', err);
+        this.isSubmittingReview = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  caricaQuiz(courseId: number): void {
+    this.quizService.getQuizByCourse(courseId).subscribe({
+      next: (quiz) => {
+        this.quizData = quiz;
+        this.cdr.detectChanges();
+      },
+      error: () => {
         this.quizData = null;
         this.cdr.detectChanges();
       }
@@ -95,37 +202,25 @@ export class VideolezioniComponent implements OnInit {
 
   selezionaRisposta(questionId: number, optionId: number): void {
     this.quizAnswers[questionId] = optionId;
-    console.log('🔘 Risposta selezionata:', { questionId, optionId, statoAttuale: this.quizAnswers });
     this.cdr.detectChanges();
   }
 
   inviaQuiz(): void {
-    console.log('🚀 Tentativo invio quiz...');
-    console.log('Stato quizData:', this.quizData);
-    console.log('Risposte registrate:', this.quizAnswers);
-
-    if (!this.quizData || this.isSubmittingQuiz) {
-      console.warn('⚠️ Invio bloccato: quizData nullo o invio già in corso');
-      return;
-    }
+    if (!this.quizData || this.isSubmittingQuiz) return;
 
     const answersPayload = Object.keys(this.quizAnswers).map(qId => ({
       questionId: Number(qId),
       selectedOptionId: this.quizAnswers[Number(qId)]
     }));
 
-    console.log('📦 Payload inviato al backend:', answersPayload);
-
     this.isSubmittingQuiz = true;
     this.quizService.submitQuiz(this.quizData.id, answersPayload).subscribe({
       next: (result) => {
-        console.log('✅ Risultato Quiz ricevuto con successo:', result);
         this.quizResult = result;
         this.isSubmittingQuiz = false;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('❌ Errore HTTP durante la valutazione del quiz:', err);
+      error: () => {
         this.isSubmittingQuiz = false;
         this.cdr.detectChanges();
       }
@@ -216,27 +311,7 @@ export class VideolezioniComponent implements OnInit {
         this.listaCommenti = this.listaCommenti.filter(c => c.id !== commentId);
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Errore durante l\'eliminazione del commento:', err);
-      }
-    });
-  }
-
-  ngOnInit(): void {
-    const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-
-    this.currentUserId = localStorage.getItem('user_id') || '';
-    this.isLoggedIn = !!token;
-    this.userRole = localStorage.getItem('user_role');
-
-    this.route.paramMap.subscribe(params => {
-      const courseIdParam = params.get('courseId');
-      console.log('📌 Parametro ID Corso rilevato:', courseIdParam);
-      if (courseIdParam) {
-        this.currentCourseId = Number(courseIdParam);
-        this.verificaAcquistoECaricaVideo(this.currentCourseId);
-        this.caricaQuiz(this.currentCourseId); // <-- Questa riga avvia il recupero del Quiz
-      }
+      error: (err) => console.error('Errore durante l\'eliminazione del commento:', err)
     });
   }
 
@@ -273,9 +348,7 @@ export class VideolezioniComponent implements OnInit {
 
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error("Errore nel caricamento delle videolezioni del corso:", err);
-      }
+      error: (err) => console.error("Errore nel caricamento delle videolezioni:", err)
     });
   }
 
@@ -340,7 +413,6 @@ export class VideolezioniComponent implements OnInit {
     const isAnteprimaLibera = (indice === 0) && !video.premium;
     const idEffettivo = video.videoId || (video as any).id;
 
-    // Sblocco consentito se l'utente è STORE/ADMIN oppure ha acquistato il singolo corso
     if (video.premium) {
       const haAccesso = (this.userRole === 'STORE' || this.userRole === 'ADMIN' || this.isCoursePurchased);
       this.statoVisione = haAccesso ? 'RIPRODUCI' : 'BLOCCO_PREMIUM';
@@ -423,9 +495,7 @@ export class VideolezioniComponent implements OnInit {
         this.nuovoCommentoTesto = '';
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error("Errore durante il salvataggio del commento:", err);
-      }
+      error: (err) => console.error("Errore durante il salvataggio del commento:", err)
     });
   }
 }

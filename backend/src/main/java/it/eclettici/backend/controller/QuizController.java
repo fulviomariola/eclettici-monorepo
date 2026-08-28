@@ -1,5 +1,6 @@
 package it.eclettici.backend.controller;
 
+import it.eclettici.backend.dto.AdminQuizDto;
 import it.eclettici.backend.dto.QuizDto;
 import it.eclettici.backend.dto.QuizResultDto;
 import it.eclettici.backend.dto.QuizSubmissionDto;
@@ -11,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -51,5 +53,36 @@ public class QuizController {
 
         QuizResultDto result = quizService.submitQuiz(quizId, submission, authenticatedUserId);
         return ResponseEntity.ok(result);
+    }
+
+    // --- ENDPOINTS AMMINISTRATIVI (BACKOFFICE) ---
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AdminQuizDto>> getAllAdminQuizzes() {
+        return ResponseEntity.ok(quizService.getAllAdminQuizzes());
+    }
+
+    @GetMapping("/admin/course/{courseId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminQuizDto> getAdminQuizByCourse(@PathVariable Long courseId) {
+        return quizService.getAdminQuizByCourseId(courseId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.noContent().build());
+    }
+
+    @PostMapping("/admin/course/{courseId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AdminQuizDto> saveOrUpdateQuiz(
+            @PathVariable Long courseId,
+            @RequestBody AdminQuizDto dto) {
+        return ResponseEntity.ok(quizService.saveOrUpdateQuiz(courseId, dto));
+    }
+
+    @DeleteMapping("/admin/{quizId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteQuiz(@PathVariable Long quizId) {
+        quizService.deleteQuiz(quizId);
+        return ResponseEntity.noContent().build();
     }
 }

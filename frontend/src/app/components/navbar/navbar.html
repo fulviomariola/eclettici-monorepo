@@ -1,4 +1,4 @@
-<nav class="bg-slate-900 border-b border-slate-800 text-slate-100 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between shadow-md">
+<nav class="bg-slate-900 border-b border-slate-800 text-slate-100 px-4 sm:px-6 py-4 flex flex-wrap items-center justify-between shadow-md relative z-50">
 
   <!-- Logo + Pulsante Mobile Hamburger -->
   <div class="flex items-center justify-between w-full sm:w-auto">
@@ -24,9 +24,9 @@
   <!-- Box Link di Navigazione -->
   <div
     [class.hidden]="!isMenuAperto"
-    class="flex-col sm:flex sm:flex-row items-start sm:items-center gap-y-2 sm:gap-y-0 sm:gap-x-6 text-sm font-medium w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-800">
+    class="flex-col sm:flex sm:flex-row items-start sm:items-center gap-y-2 sm:gap-y-0 sm:gap-x-5 text-sm font-medium w-full sm:w-auto mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-t-0 border-slate-800">
 
-    <!-- LINK PUBBLICI SEMPRE VISIBILI -->
+    <!-- LINK PUBBLICI -->
     <a routerLink="/"
        (click)="isMenuAperto = false"
        routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -54,7 +54,6 @@
     <!-- SEZIONE AUTENTICATA -->
     @if (currentRole$ | async; as ruolo) {
 
-      <!-- Pannello Controllo (Visibile solo per ADMIN) -->
       @if (ruolo === 'ADMIN') {
         <a routerLink="/gestione-video"
            (click)="isMenuAperto = false"
@@ -65,7 +64,6 @@
         </a>
       }
 
-      <!-- Dashboard (Accessibile a tutti gli utenti loggati) -->
       <a routerLink="/dashboard"
          (click)="isMenuAperto = false"
          routerLinkActive="text-indigo-400 font-semibold bg-slate-800/50"
@@ -73,6 +71,61 @@
          class="hover:text-white transition no-underline px-3 py-2 rounded-lg text-slate-300 w-full sm:w-auto block">
         Dashboard
       </a>
+
+      <!-- CAMPANELLA NOTIFICHE & DROPDOWN -->
+      <div class="relative w-full sm:w-auto my-2 sm:my-0">
+        <button
+          (click)="toggleNotifications()"
+          class="relative p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-2 sm:block w-full sm:w-auto">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <span class="sm:hidden text-xs">Notifiche</span>
+
+          @if (unreadCount > 0) {
+            <span class="sm:absolute sm:-top-1 sm:-right-1 bg-indigo-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-slate-900 animate-pulse">
+              {{ unreadCount }}
+            </span>
+          }
+        </button>
+
+        <!-- Dropdown Notifiche -->
+        @if (isNotificationDropdownOpen) {
+          <div class="sm:absolute sm:right-0 mt-2 w-full sm:w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 space-y-3 z-50">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+              <span class="text-xs font-bold text-white uppercase tracking-wider">Notifiche</span>
+              @if (unreadCount > 0) {
+                <button
+                  (click)="markAllRead()"
+                  class="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold cursor-pointer">
+                  Segna tutte come lette
+                </button>
+              }
+            </div>
+
+            <div class="max-h-64 overflow-y-auto space-y-2 pr-1">
+              @if (notifications.length === 0) {
+                <div class="text-center py-6 text-xs text-slate-500">
+                  Nessuna notifica presente.
+                </div>
+              } @else {
+                @for (notif of notifications; track notif.id) {
+                  <div
+                    (click)="handleNotificationClick(notif)"
+                    [class]="notif.read ? 'bg-slate-950/40 border-slate-800/60 opacity-60' : 'bg-slate-800/80 border-indigo-500/40'"
+                    class="p-3 border rounded-xl cursor-pointer hover:border-indigo-400 transition text-left space-y-1">
+                    <div class="flex items-center justify-between">
+                      <span class="text-xs font-bold text-white">{{ notif.title }}</span>
+                      <span class="text-[10px] text-slate-400">{{ notif.createdAt | date:'HH:mm dd/MM' }}</span>
+                    </div>
+                    <p class="text-[11px] text-slate-300 leading-snug">{{ notif.message }}</p>
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        }
+      </div>
 
       <!-- Pulsante Logout -->
       <button
@@ -82,7 +135,6 @@
       </button>
 
     } @else {
-      <!-- Pulsante Login per utenti anonimi -->
       <a
         routerLink="/login"
         (click)="isMenuAperto = false"

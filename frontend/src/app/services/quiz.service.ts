@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from '../config/api.config';
 
+// --- Interfacce per la visualizzazione Studente ---
 export interface QuizOption {
   id: number;
   optionText: string;
@@ -45,6 +46,28 @@ export interface CertificateVerifyDto {
   issuedAt: string;
 }
 
+// --- Interfacce per la Gestione Amministratore (Backoffice) ---
+export interface AdminQuizOption {
+  id?: number;
+  optionText: string;
+  correct: boolean;
+}
+
+export interface AdminQuizQuestion {
+  id?: number;
+  questionText: string;
+  options: AdminQuizOption[];
+}
+
+export interface AdminQuizDto {
+  id?: number;
+  courseId: number;
+  courseTitle?: string;
+  title: string;
+  passingScore: number;
+  questions: AdminQuizQuestion[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -56,6 +79,8 @@ export class QuizService {
   private httpOptions = {
     withCredentials: true
   };
+
+  // --- Metodi Studente ---
 
   getQuizByCourse(courseId: number): Observable<QuizDto> {
     return this.http.get<QuizDto>(`${this.apiUrl}/course/${courseId}`);
@@ -78,5 +103,23 @@ export class QuizService {
 
   verifyCertificate(attemptId: number): Observable<CertificateVerifyDto> {
     return this.http.get<CertificateVerifyDto>(`${this.certificateUrl}/verify/${attemptId}`);
+  }
+
+  // --- Metodi Amministratore (Backoffice) ---
+
+  getAllAdminQuizzes(): Observable<AdminQuizDto[]> {
+    return this.http.get<AdminQuizDto[]>(`${this.apiUrl}/admin/all`, this.httpOptions);
+  }
+
+  getAdminQuizByCourse(courseId: number): Observable<AdminQuizDto> {
+    return this.http.get<AdminQuizDto>(`${this.apiUrl}/admin/course/${courseId}`, this.httpOptions);
+  }
+
+  saveOrUpdateQuiz(courseId: number, quizData: AdminQuizDto): Observable<AdminQuizDto> {
+    return this.http.post<AdminQuizDto>(`${this.apiUrl}/admin/course/${courseId}`, quizData, this.httpOptions);
+  }
+
+  deleteQuiz(quizId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/admin/${quizId}`, this.httpOptions);
   }
 }
