@@ -73,3 +73,7 @@ fullstack-eclettici-monorepo.odt
 
 ### Escludo il token per git ###
 IONOS_token_API
+
+# escludo le funzionalità di vscode
+.vscode/
+eclettici.code-workspace
